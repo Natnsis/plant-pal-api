@@ -20,9 +20,6 @@ type User struct {
 	Email string `json:"email"`
 }
 
-func AddUser() {
-}
-
 func Register(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusBadGateway)
