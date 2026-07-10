@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -17,18 +18,21 @@ func ConnectToDb() {
 		log.Fatal("unable to load env file")
 		return
 	}
+	fmt.Println("env is loaded")
 
-	db_url := os.Getenv("DATABASE_URL")
+	db_url := os.Getenv("LOCAL_DB_URL")
 	if db_url == "" {
 		log.Fatal("no database url found")
 		return
 	}
+	fmt.Println("local db is fetched")
 
 	conn, err := gorm.Open(postgres.Open(db_url), &gorm.Config{})
 	if err != nil {
 		log.Fatal("unable to connect to the db")
 		return
 	}
+	fmt.Println("connected to db")
 
 	Db = conn
 }
