@@ -7,6 +7,9 @@ import (
 
 	"plantPal/internals/config"
 	"plantPal/internals/models"
+	"plantPal/internals/routes"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -15,9 +18,14 @@ func main() {
 	// to auto migrate dbs
 	models.MigrateDb()
 
-	if err := http.ListenAndServe(":8080", http.DefaultServeMux); err != nil {
-		log.Fatal("an error occured")
-	}
+	// initialze mux
+	r := mux.NewRouter()
+	// routes
+	routes.AuthRoutes(r)
 
-	fmt.Println("server is running on port :8080")
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		log.Fatal("an error occured")
+	} else {
+		fmt.Println("server is running on port http://localhost:8080")
+	}
 }

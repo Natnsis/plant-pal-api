@@ -11,8 +11,10 @@ import (
 )
 
 type RegisterRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
 }
 
 type User struct {
@@ -58,11 +60,10 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userData := models.User{
-		FirstName:   "",
-		LastName:    "",
-		PhoneNumber: "",
-		Email:       req.Email,
-		Password:    string(hashedPassword),
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     req.Email,
+		Password:  string(hashedPassword),
 	}
 
 	result := config.Db.Create(&userData)

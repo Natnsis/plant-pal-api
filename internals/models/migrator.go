@@ -11,8 +11,11 @@ func MigrateDb() {
 		&User{},
 	)
 	if err != nil {
-		fmt.Println("user is not migrated")
-	} else {
-		fmt.Println("unable to migrate db")
+		// if ther is error on migration
+		fmt.Printf("database migration failed: %v", err)
+		return
 	}
+
+	// if everyting is fine
+	fmt.Printf("models are migrated")
 }
