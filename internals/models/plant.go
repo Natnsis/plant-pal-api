@@ -50,13 +50,13 @@ type Pruning struct {
 
 type CarePlan struct {
 	gorm.Model
-	Watering   Watering
-	Light      Light
-	Humidity   Humidity
-	Tempreture Tempreture
-	Soil       Soil
-	Fertilizar Fertilizar
-	Pruning    Pruning
+	WateringID   uint `json:"watering_id"`
+	LightID      uint `json:"light_id"`
+	HumidityID   uint `json:"humidity_id"`
+	TempretureID uint `json:"tempreture_id"`
+	SoilID       uint `json:"soil_id"`
+	FertilizarID uint `json:"fertilizer_id"`
+	PruningID    uint `json:"prunint_id"`
 }
 
 type Plant struct {
