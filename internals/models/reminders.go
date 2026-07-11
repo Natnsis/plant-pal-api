@@ -6,12 +6,22 @@ import (
 	"gorm.io/gorm"
 )
 
+type TaskType string
+
+const (
+	WaterTask     TaskType = "water"
+	FertilizeTask TaskType = "fertilize"
+	MistTask      TaskType = "mist"
+	RotateTask    TaskType = "rotate"
+	ReportTask    TaskType = "report"
+)
+
 type Reminder struct {
 	gorm.Model
 	PlantID       uint
-	TaskType      string // enum=> water, fertilize, mist, rotate, report
+	TaskType      TaskType
 	ScheduledTime time.Time
 	IsCompleted   bool
-	CompletedAt   time.Time // nullable
+	CompletedAt   time.Time
 	SnoozeCount   int
 }

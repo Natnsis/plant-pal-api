@@ -6,9 +6,16 @@ import (
 	"gorm.io/gorm"
 )
 
+type SenderType string
+
+const (
+	SenderTypeUser SenderType = "user"
+	SenderTypeAi   SenderType = "ai"
+)
+
 type AiChat struct {
 	gorm.Model
 	SessionID   uint
-	SenderType  string // enum user,ai
+	SenderType  SenderType
 	MessageBody string
 }

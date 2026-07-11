@@ -6,12 +6,21 @@ import (
 	"gorm.io/gorm"
 )
 
+type Symptoms string
+
+const (
+	LeaveSymptoms     Symptoms = "yellow_leaves"
+	BrownSpotSymptoms Symptoms = "brown_spots"
+	LeaveSymptoms     Symptoms = "brown_steams"
+	LeaveSymptoms     Symptoms = "weathering_leaves"
+)
+
 type Scan struct {
 	gorm.Model
 	UserID           uint
 	PlantID          uint
-	ScanType         string // enum: identification, diagnosis
+	AnalysisID       uint
 	CapturedImageUrl string
-	SelectedSymptoms []string // yellow leaves, brown spots..
+	SelectedSymptoms []Symptoms
 	AiOutputID       uint
 }
