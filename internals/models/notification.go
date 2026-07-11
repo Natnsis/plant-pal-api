@@ -1,11 +1,18 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
 
-type Reminders struct {
+	"gorm.io/gorm"
+)
+
+type Notification struct {
 	gorm.Model
-	PlantID  uint
-	Title    string
-	SubTitle string
-	IsRead   bool
+	UserID                      uint
+	NotificationEnabled         bool
+	DailySummaryEnabled         bool
+	SoundAlertEnabled           bool
+	VibrationEnabled            bool
+	PreferredNotificationTime   time.Time
+	DefaultSnoozeDurationMinute int
 }
