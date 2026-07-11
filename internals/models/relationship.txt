@@ -1,0 +1,13 @@
+//user = notification //one to one
+//user = plant //one to many
+//user = scan //one to many
+//user = aiChat //one to many
+
+// species = plant //one to many
+// plant = plan //one to one
+// plant = reminder //one to many
+// plant = growth metric //one to many
+// plant = activity log //one to many
+
+// ai chat =  ai session  // many to one
+
