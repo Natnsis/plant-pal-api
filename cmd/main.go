@@ -23,9 +23,8 @@ func main() {
 	// routes
 	routes.AuthRoutes(r)
 
+	fmt.Println("server is running on port http://localhost:8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
-		log.Fatal("an error occured")
-	} else {
-		fmt.Println("server is running on port http://localhost:8080")
+		log.Fatal("an error occured: ", err)
 	}
 }

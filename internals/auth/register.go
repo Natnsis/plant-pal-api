@@ -10,64 +10,54 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type RegisterRequest struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-}
-
-type User struct {
-	ID    string `json:"id"`
-	Email string `json:"email"`
+// list the request data types
+type RequestData struct {
+	FullName    string `json:"full_name"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	PhoneNumber string `json:"phone_number"`
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
+	// check method
 	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusBadGateway)
+		http.Error(w, "wrong request method used", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var req RegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "request body is empty", http.StatusNoContent)
+	// get userdata
+	var req RequestData
+	json.NewDecoder(r.Body).Decode(&req)
+
+	// validate user data
+	if req.FullName == "" || req.Email == "" || req.Password == "" || req.PhoneNumber == "" {
+		http.Error(w, "missing parameter", http.StatusBadRequest)
 		return
 	}
 
-	if req.Email == "" || req.Password == "" {
-		http.Error(w, "email or password required", http.StatusNoContent)
-		return
-	}
-
-	var exists bool
-	var user User
-	if err := config.Db.Find(&user, req.Email == user.Email); err != nil {
-		exists = true
-	} else {
-		exists = false
-	}
-
-	if !exists {
-		http.Error(w, "email already exits", http.StatusConflict)
-		return
-	}
-
-	// hash password before storing
+	// hash user password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		http.Error(w, "unable to hash password", http.StatusInternalServerError)
+		http.Error(w, "unable to hash the password", http.StatusBadRequest)
 		return
 	}
 
-	userData := models.User{
-		FullName: req.FirstName + " " + req.LastName,
-		Email:    req.Email,
-		Password: string(hashedPassword),
+	// put user data into table with hashed data
+	UserData := models.User{
+		Email:       req.Email,
+		Password:    string(hashedPassword),
+		FullName:    req.FullName,
+		PhoneNumber: req.PhoneNumber,
 	}
 
-	result := config.Db.Create(&userData)
-	if result.Error != nil {
-		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+	reslut := config.Db.Create(&UserData)
+	if reslut.Error != nil {
+		http.Error(w, "unable to hash the password", http.StatusBadRequest)
 		return
 	}
+
+	// return value
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(UserData)
 }

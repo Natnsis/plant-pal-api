@@ -1,24 +1,50 @@
 package models
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
+
 	"gorm.io/gorm"
 )
 
 type Symptoms string
 
 const (
-	YellowLeavesSymptom Symptoms = "yellow_leaves"
-	BrownSpotsSymptom   Symptoms = "brown_spots"
-	BrownStemsSymptom   Symptoms = "brown_stems"
-	WitheringLeavesSymptom Symptoms = "withering_leaves"
+	LeaveYellowSymptoms Symptoms = "yellow_leaves"
+	BrownSpotSymptoms   Symptoms = "brown_spots"
+	LeaveBrownSymptoms  Symptoms = "brown_steams"
+	WeatheringSymptoms  Symptoms = "weathering_leaves"
 )
+
+type SymptomList []Symptoms
+
+func (s SymptomList) Value() (driver.Value, error) {
+	if s == nil {
+		return nil, nil
+	}
+	return json.Marshal(s)
+}
+
+func (s *SymptomList) Scan(value interface{}) error {
+	if value == nil {
+		*s = nil
+		return nil
+	}
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan SymptomList: value is of type %T, not []byte", value)
+	}
+	return json.Unmarshal(bytes, s)
+}
 
 type Scan struct {
 	gorm.Model
-	UserID           uint       `json:"user_id" gorm:"index;not null"`
-	PlantID          uint       `json:"plant_id" gorm:"index;not null"`
-	CapturedImageUrl string     `json:"captured_image_url" gorm:"size:500"`
-	SelectedSymptoms []Symptoms `json:"selected_symptoms" gorm:"type:text[]"`
-	User             *User      `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
-	Plant            *Plant     `json:"plant,omitempty" gorm:"foreignKey:PlantID;constraint:OnDelete:CASCADE"`
+	UserID     uint
+	PlantID    uint
+	AnalysisID uint
+
+	CapturedImageUrl string
+	SelectedSymptoms SymptomList `gorm:"type:json"`
+	AiOutputID       uint
 }
