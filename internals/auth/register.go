@@ -60,10 +60,9 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userData := models.User{
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-		Email:     req.Email,
-		Password:  string(hashedPassword),
+		FullName: req.FirstName + " " + req.LastName,
+		Email:    req.Email,
+		Password: string(hashedPassword),
 	}
 
 	result := config.Db.Create(&userData)
