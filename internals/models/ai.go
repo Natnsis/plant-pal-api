@@ -1,20 +1,18 @@
 package models
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import "gorm.io/gorm"
 
 type ChatStatus string
 
 const (
-	StatusActive   ChatStatus = "active"
-	StatusArchived ChatStatus = "archived"
+	ChatStatusActive   ChatStatus = "active"
+	ChatStatusArchived ChatStatus = "archived"
 )
 
 type AiChatSession struct {
 	gorm.Model
-	UserID uint
-	Status ChatStatus
+	UserID  uint       `json:"user_id" gorm:"index;not null"`
+	Status  ChatStatus `json:"status" gorm:"not null;size:20;default:'active'"`
+	User    *User      `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	AiChats []AiChat   `json:"ai_chats,omitempty" gorm:"foreignKey:SessionID;constraint:OnDelete:CASCADE"`
 }

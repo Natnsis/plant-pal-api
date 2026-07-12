@@ -1,13 +1,16 @@
-//user = notification //one to one
-//user = plant //one to many
-//user = scan //one to many
-//user = aiChat //one to many
+User -> Notification     // one-to-many  (cascade delete)
+User -> Plant            // one-to-many  (cascade delete)
+User -> Scan             // one-to-many  (cascade delete)
+User -> AiChatSession    // one-to-many  (cascade delete)
 
-// species = plant //one to many
-// plant = plan //one to one
-// plant = reminder //one to many
-// plant = growth metric //one to many
-// plant = activity log //one to many
+Species -> Plant         // one-to-many  (set null on species delete)
 
-// ai chat =  ai session  // many to one
+Plant -> CarePlan        // one-to-one   (cascade delete)
+Plant -> Reminder        // one-to-many  (cascade delete)
+Plant -> GrowthMetric    // one-to-many  (cascade delete)
+Plant -> ActivityLog     // one-to-many  (cascade delete)
+Plant -> Scan            // one-to-many  (cascade delete)
 
+Scan -> AiAnalysisResult // one-to-one   (cascade delete)
+
+AiChatSession -> AiChat  // one-to-many  (cascade delete)

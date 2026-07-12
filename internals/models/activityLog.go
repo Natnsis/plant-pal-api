@@ -9,18 +9,19 @@ import (
 type ActivityType string
 
 const (
-	StatusWatered    ActivityType = "watered"
-	StatusFertilized ActivityType = "fertilized"
-	StatusRepotted   ActivityType = "repotted"
-	StatusPhotoNode  ActivityType = "photo_node"
-	StatusMilestore  ActivityType = "milestone"
+	ActivityWatered    ActivityType = "watered"
+	ActivityFertilized ActivityType = "fertilized"
+	ActivityRepotted   ActivityType = "repotted"
+	ActivityPhotoNode  ActivityType = "photo_node"
+	ActivityMilestone  ActivityType = "milestone"
 )
 
 type ActivityLog struct {
 	gorm.Model
-	PlantID      uint
-	ActivityType ActivityType
-	LoggedDate   time.Time
-	Notes        string
-	PhotoUrl     string
+	PlantID      uint         `json:"plant_id" gorm:"index;not null"`
+	ActivityType ActivityType `json:"activity_type" gorm:"not null;size:20"`
+	LoggedDate   time.Time    `json:"logged_date" gorm:"not null"`
+	Notes        string       `json:"notes" gorm:"type:text"`
+	PhotoUrl     string       `json:"photo_url" gorm:"size:500"`
+	Plant        *Plant       `json:"plant,omitempty" gorm:"foreignKey:PlantID;constraint:OnDelete:CASCADE"`
 }
