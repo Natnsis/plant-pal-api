@@ -3,32 +3,39 @@ package auth
 import (
 	"encoding/json"
 	"net/http"
+
+	"plantPal/internals/config"
+	"plantPal/internals/models"
 )
 
 // request body type
-type RequestType struct {
+type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	// check method
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusBadGateway)
+	// decode and assign request body
+	var req LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	// get user data
-	var req RequestType
-	json.NewDecoder(r.Body).Decode(&req)
-
-	// validating email and password
 	if req.Email == "" || req.Password == "" {
-		http.Error(w, "some credentials are missing", http.StatusBadGateway)
+		http.Error(w, "Email and Password required", http.StatusBadRequest)
 		return
 	}
 
-	// compare the hashed password
+	// fetch user with that specific email
+	var user models.User
+	result := config.Db.Where("email = ?", req.Email).First(&user)
+	if result.Error != nil {
+		http.Error(w, "Invalid Credentials", http.StatusUnauthorized)
+		return
+	}
+
+	// bcrypt password comparision
 
 	// generate tokens
 
