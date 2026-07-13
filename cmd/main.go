@@ -13,8 +13,10 @@ import (
 )
 
 func main() {
-	// connection
+	// config functions
 	config.ConnectToDb()
+	config.GetJwtSecret()
+
 	// to auto migrate dbs
 	models.MigrateDb()
 
