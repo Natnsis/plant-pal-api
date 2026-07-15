@@ -11,6 +11,7 @@ func MigrateDb() {
 
 	err := config.Db.AutoMigrate(
 		&User{},
+		&RefreshToken{},
 		&Species{},
 		&Plant{},
 		&Scan{},
