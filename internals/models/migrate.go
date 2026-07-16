@@ -8,6 +8,7 @@ import (
 
 func MigrateDb() {
 	config.Db.Exec("DROP TABLE IF EXISTS scans CASCADE")
+	config.Db.Exec("DROP TABLE IF EXISTS ai_analysis_results CASCADE")
 
 	err := config.Db.AutoMigrate(
 		&User{},

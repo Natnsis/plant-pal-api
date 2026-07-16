@@ -1,23 +1,31 @@
 basePath: /
 definitions:
-  auth.LoginRequest:
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  internals_auth.LoginRequest:
     properties:
       email:
         type: string
       password:
         type: string
     type: object
-  auth.LogoutRequest:
+  internals_auth.LogoutRequest:
     properties:
       refresh_token:
         type: string
     type: object
-  auth.RefreshRequest:
+  internals_auth.RefreshRequest:
     properties:
       refresh_token:
         type: string
     type: object
-  auth.RegisterRequest:
+  internals_auth.RegisterRequest:
     properties:
       email:
         type: string
@@ -28,6 +36,407 @@ definitions:
       phone_number:
         type: string
     type: object
+  internals_handlers.ChatMessageRequest:
+    properties:
+      message:
+        type: string
+    type: object
+  internals_handlers.CreateActivityRequest:
+    properties:
+      activity_type:
+        type: string
+      notes:
+        type: string
+      photo_url:
+        type: string
+    type: object
+  internals_handlers.CreateGrowthRequest:
+    properties:
+      growth_rate_status:
+        type: string
+      height_cm:
+        type: number
+    type: object
+  internals_handlers.CreatePlantRequest:
+    properties:
+      location:
+        type: string
+      nickname:
+        type: string
+      species_id:
+        type: integer
+    type: object
+  internals_handlers.UpdateCarePlanRequest:
+    properties:
+      humidity_requirement:
+        type: string
+      light_requirement:
+        type: string
+      watering_amount:
+        type: string
+      watering_frequency_days:
+        type: integer
+      watering_method:
+        type: string
+      watering_tips:
+        type: string
+    type: object
+  internals_handlers.UpdateNotificationRequest:
+    properties:
+      daily_summary_enabled:
+        type: boolean
+      default_snooze_duration_minute:
+        type: integer
+      notification_enabled:
+        type: boolean
+      preferred_notification_time:
+        type: string
+      sound_alert_enabled:
+        type: boolean
+      vibration_enabled:
+        type: boolean
+    type: object
+  internals_handlers.UpdatePlantRequest:
+    properties:
+      health_score:
+        type: integer
+      location:
+        type: string
+      nickname:
+        type: string
+      status:
+        type: string
+    type: object
+  internals_handlers.UpdateReminderRequest:
+    properties:
+      is_completed:
+        type: boolean
+      snooze:
+        type: boolean
+    type: object
+  plantPal_internals_models.ActivityLog:
+    properties:
+      activity_type:
+        $ref: '#/definitions/plantPal_internals_models.ActivityType'
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      logged_date:
+        type: string
+      notes:
+        type: string
+      photo_url:
+        type: string
+      plant:
+        $ref: '#/definitions/plantPal_internals_models.Plant'
+      plant_id:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  plantPal_internals_models.ActivityType:
+    enum:
+    - watered
+    - fertilized
+    - repotted
+    - photo_node
+    - milestone
+    type: string
+    x-enum-varnames:
+    - ActivityWatered
+    - ActivityFertilized
+    - ActivityRepotted
+    - ActivityPhotoNode
+    - ActivityMilestone
+  plantPal_internals_models.CarePlan:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      humidity_requirement:
+        type: string
+      id:
+        type: integer
+      light_requirement:
+        type: string
+      plant:
+        $ref: '#/definitions/plantPal_internals_models.Plant'
+      plant_id:
+        type: integer
+      updatedAt:
+        type: string
+      watering_amount:
+        type: string
+      watering_frequency_days:
+        type: integer
+      watering_method:
+        type: string
+      watering_tips:
+        type: string
+    type: object
+  plantPal_internals_models.DifficultyType:
+    enum:
+    - easy
+    - medium
+    - hard
+    type: string
+    x-enum-varnames:
+    - EasyDifficulty
+    - MediumDifficulty
+    - HardDifficulty
+  plantPal_internals_models.GrowthMetric:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      growth_rate_status:
+        $ref: '#/definitions/plantPal_internals_models.GrowthRateStatus'
+      height_cm:
+        type: number
+      id:
+        type: integer
+      plant:
+        $ref: '#/definitions/plantPal_internals_models.Plant'
+      plant_id:
+        type: integer
+      recorded_date:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  plantPal_internals_models.GrowthRateStatus:
+    enum:
+    - slow
+    - moderate
+    - fast
+    type: string
+    x-enum-varnames:
+    - SlowGrowthRate
+    - ModerateGrowthRate
+    - FastGrowthRate
+  plantPal_internals_models.Notification:
+    properties:
+      createdAt:
+        type: string
+      daily_summary_enabled:
+        type: boolean
+      default_snooze_duration_minute:
+        type: integer
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      notification_enabled:
+        type: boolean
+      preferred_notification_time:
+        type: string
+      sound_alert_enabled:
+        type: boolean
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/plantPal_internals_models.User'
+      user_id:
+        type: integer
+      vibration_enabled:
+        type: boolean
+    type: object
+  plantPal_internals_models.Plant:
+    properties:
+      activity_logs:
+        items:
+          $ref: '#/definitions/plantPal_internals_models.ActivityLog'
+        type: array
+      care_plans:
+        items:
+          $ref: '#/definitions/plantPal_internals_models.CarePlan'
+        type: array
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      growth_metrics:
+        items:
+          $ref: '#/definitions/plantPal_internals_models.GrowthMetric'
+        type: array
+      health_score:
+        type: integer
+      id:
+        type: integer
+      location:
+        type: string
+      nickname:
+        type: string
+      reminders:
+        items:
+          $ref: '#/definitions/plantPal_internals_models.Reminder'
+        type: array
+      scans:
+        items:
+          $ref: '#/definitions/plantPal_internals_models.Scan'
+        type: array
+      species:
+        $ref: '#/definitions/plantPal_internals_models.Species'
+      species_id:
+        type: integer
+      status:
+        $ref: '#/definitions/plantPal_internals_models.PlantStatus'
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/plantPal_internals_models.User'
+      user_id:
+        type: integer
+    type: object
+  plantPal_internals_models.PlantStatus:
+    enum:
+    - good
+    - needs_attention
+    type: string
+    x-enum-varnames:
+    - GoodPlantStatus
+    - NeedsAttentionStatus
+  plantPal_internals_models.Reminder:
+    properties:
+      completed_at:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      is_completed:
+        type: boolean
+      plant:
+        $ref: '#/definitions/plantPal_internals_models.Plant'
+      plant_id:
+        type: integer
+      scheduled_time:
+        type: string
+      snooze_count:
+        type: integer
+      task_type:
+        $ref: '#/definitions/plantPal_internals_models.TaskType'
+      updatedAt:
+        type: string
+    type: object
+  plantPal_internals_models.Scan:
+    properties:
+      ai_output_id:
+        type: integer
+      analysis_id:
+        type: integer
+      captured_image_url:
+        type: string
+      confidence_score:
+        type: number
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      plant_id:
+        type: integer
+      retake:
+        type: boolean
+      selectedSymptoms:
+        items:
+          $ref: '#/definitions/plantPal_internals_models.Symptoms'
+        type: array
+      updatedAt:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  plantPal_internals_models.Species:
+    properties:
+      common_name:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      difficulty_level:
+        $ref: '#/definitions/plantPal_internals_models.DifficultyType'
+      family:
+        type: string
+      id:
+        type: integer
+      origin:
+        type: string
+      plants:
+        items:
+          $ref: '#/definitions/plantPal_internals_models.Plant'
+        type: array
+      scientific_name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  plantPal_internals_models.Symptoms:
+    enum:
+    - yellow_leaves
+    - brown_spots
+    - brown_steams
+    - weathering_leaves
+    type: string
+    x-enum-varnames:
+    - LeaveYellowSymptoms
+    - BrownSpotSymptoms
+    - LeaveBrownSymptoms
+    - WeatheringSymptoms
+  plantPal_internals_models.TaskType:
+    enum:
+    - water
+    - fertilize
+    - mist
+    - rotate
+    - repot
+    type: string
+    x-enum-varnames:
+    - WaterTask
+    - FertilizeTask
+    - MistTask
+    - RotateTask
+    - RepotTask
+  plantPal_internals_models.User:
+    properties:
+      care_streak_days:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: integer
+      notifications:
+        items:
+          $ref: '#/definitions/plantPal_internals_models.Notification'
+        type: array
+      phone_number:
+        type: string
+      plants:
+        items:
+          $ref: '#/definitions/plantPal_internals_models.Plant'
+        type: array
+      total_journial_injuries:
+        type: integer
+      total_task_done:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -35,6 +444,116 @@ info:
   title: PlantPal API
   version: "1.0"
 paths:
+  /diagnosis:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a plant image to start a diagnosis chat session. Returns
+        initial analysis and chat session.
+      parameters:
+      - description: Plant image
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: missing image
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "500":
+          description: internal error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Start a diagnosis chat
+      tags:
+      - diagnosis
+  /diagnosis/{session_id}:
+    get:
+      description: Get full chat history for a diagnosis session
+      parameters:
+      - description: Chat Session ID
+        in: path
+        name: session_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "404":
+          description: session not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get diagnosis chat history
+      tags:
+      - diagnosis
+  /diagnosis/{session_id}/chat:
+    post:
+      consumes:
+      - application/json
+      description: Send a message in an existing diagnosis session. Full chat history
+        is sent to AI.
+      parameters:
+      - description: Chat Session ID
+        in: path
+        name: session_id
+        required: true
+        type: integer
+      - description: Message
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internals_handlers.ChatMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "404":
+          description: session not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Send a follow-up message in a diagnosis chat
+      tags:
+      - diagnosis
   /login:
     post:
       consumes:
@@ -47,7 +566,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/auth.LoginRequest'
+          $ref: '#/definitions/internals_auth.LoginRequest'
       produces:
       - application/json
       responses:
@@ -79,7 +598,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/auth.LogoutRequest'
+          $ref: '#/definitions/internals_auth.LogoutRequest'
       produces:
       - application/json
       responses:
@@ -100,6 +619,433 @@ paths:
       summary: Logout a user
       tags:
       - auth
+  /notifications:
+    get:
+      description: Get the notification preferences for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plantPal_internals_models.Notification'
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "404":
+          description: settings not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get notification settings
+      tags:
+      - notifications
+    put:
+      consumes:
+      - application/json
+      description: Update the notification preferences for the authenticated user
+      parameters:
+      - description: Settings payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internals_handlers.UpdateNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plantPal_internals_models.Notification'
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update notification settings
+      tags:
+      - notifications
+  /plants:
+    get:
+      description: Get all plants belonging to the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plantPal_internals_models.Plant'
+            type: array
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: List user's plants
+      tags:
+      - plants
+    post:
+      consumes:
+      - application/json
+      description: Manually create a new plant entry
+      parameters:
+      - description: Plant payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internals_handlers.CreatePlantRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/plantPal_internals_models.Plant'
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a plant
+      tags:
+      - plants
+  /plants/{id}:
+    delete:
+      description: Delete a plant and all its related data
+      parameters:
+      - description: Plant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "404":
+          description: plant not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete a plant
+      tags:
+      - plants
+    get:
+      description: Get a single plant with all related data
+      parameters:
+      - description: Plant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plantPal_internals_models.Plant'
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "404":
+          description: plant not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get plant details
+      tags:
+      - plants
+    put:
+      consumes:
+      - application/json
+      description: Update plant details
+      parameters:
+      - description: Plant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internals_handlers.UpdatePlantRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plantPal_internals_models.Plant'
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "404":
+          description: plant not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update a plant
+      tags:
+      - plants
+  /plants/{id}/activities:
+    get:
+      description: Get all activities logged for a specific plant
+      parameters:
+      - description: Plant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plantPal_internals_models.ActivityLog'
+            type: array
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get activity log for a plant
+      tags:
+      - activity
+    post:
+      consumes:
+      - application/json
+      description: Log a care activity for a plant
+      parameters:
+      - description: Plant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Activity payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internals_handlers.CreateActivityRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/plantPal_internals_models.ActivityLog'
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Log an activity
+      tags:
+      - activity
+  /plants/{id}/care-plan:
+    get:
+      description: Get the care plan associated with a plant
+      parameters:
+      - description: Plant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plantPal_internals_models.CarePlan'
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "404":
+          description: care plan not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get care plan for a plant
+      tags:
+      - care-plan
+    put:
+      consumes:
+      - application/json
+      description: Update the care plan for a plant
+      parameters:
+      - description: Plant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internals_handlers.UpdateCarePlanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plantPal_internals_models.CarePlan'
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "404":
+          description: care plan not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update care plan
+      tags:
+      - care-plan
+  /plants/{id}/growth:
+    get:
+      description: Get all growth records for a specific plant
+      parameters:
+      - description: Plant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plantPal_internals_models.GrowthMetric'
+            type: array
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get growth metrics for a plant
+      tags:
+      - growth
+    post:
+      consumes:
+      - application/json
+      description: Record a new growth measurement for a plant
+      parameters:
+      - description: Plant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Growth payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internals_handlers.CreateGrowthRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/plantPal_internals_models.GrowthMetric'
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Record a growth metric
+      tags:
+      - growth
+  /plants/{id}/reminders:
+    get:
+      description: Get all reminders for a specific plant
+      parameters:
+      - description: Plant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plantPal_internals_models.Reminder'
+            type: array
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get reminders for a plant
+      tags:
+      - reminders
   /refresh:
     post:
       consumes:
@@ -112,7 +1058,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/auth.RefreshRequest'
+          $ref: '#/definitions/internals_auth.RefreshRequest'
       produces:
       - application/json
       responses:
@@ -145,7 +1091,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/auth.RegisterRequest'
+          $ref: '#/definitions/internals_auth.RegisterRequest'
       produces:
       - application/json
       responses:
@@ -165,4 +1111,137 @@ paths:
       summary: Register a new user
       tags:
       - auth
+  /reminders/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Complete or snooze a reminder
+      parameters:
+      - description: Reminder ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internals_handlers.UpdateReminderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plantPal_internals_models.Reminder'
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "404":
+          description: reminder not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update a reminder
+      tags:
+      - reminders
+  /reminders/today:
+    get:
+      description: Get all due reminders for the authenticated user today
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plantPal_internals_models.Reminder'
+            type: array
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get today's reminders
+      tags:
+      - reminders
+  /scan:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a plant image for identification. Returns retake=true if
+        confidence is low.
+      parameters:
+      - description: Plant image
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: missing image
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "500":
+          description: internal error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Scan a plant
+      tags:
+      - scan
+  /scan/{id}:
+    get:
+      description: Get details of a specific scan
+      parameters:
+      - description: Scan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plantPal_internals_models.Scan'
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "404":
+          description: scan not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get scan details
+      tags:
+      - scan
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
