@@ -40,11 +40,12 @@ func (s *SymptomList) Scan(value interface{}) error {
 
 type Scan struct {
 	gorm.Model
-	UserID     uint
-	PlantID    uint
-	AnalysisID uint
-
-	CapturedImageUrl string
+	UserID           uint        `json:"user_id" gorm:"index;not null"`
+	PlantID          uint        `json:"plant_id" gorm:"index"`
+	AnalysisID       uint        `json:"analysis_id"`
+	CapturedImageUrl string      `json:"captured_image_url" gorm:"size:500"`
 	SelectedSymptoms SymptomList `gorm:"type:json"`
-	AiOutputID       uint
+	Retake           bool        `json:"retake" gorm:"default:false"`
+	ConfidenceScore  float64     `json:"confidence_score" gorm:"default:0"`
+	AiOutputID       uint        `json:"ai_output_id"`
 }
