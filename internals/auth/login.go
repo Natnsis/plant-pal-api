@@ -17,6 +17,17 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+// Login godoc
+// @Summary      Login a user
+// @Description  Authenticate with email and password to receive access and refresh tokens
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      LoginRequest  true  "Login credentials"
+// @Success      200   {object}  map[string]string
+// @Failure      400   {string}  string  "invalid request body or missing fields"
+// @Failure      401   {string}  string  "invalid credentials"
+// @Router       /login [post]
 func Login(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

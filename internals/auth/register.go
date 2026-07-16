@@ -18,6 +18,17 @@ type RegisterRequest struct {
 	PhoneNumber string `json:"phone_number"`
 }
 
+// Register godoc
+// @Summary      Register a new user
+// @Description  Create a new user account with full name, email, password, and phone number
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      RegisterRequest  true  "User registration payload"
+// @Success      201   {object}  map[string]interface{}
+// @Failure      400   {string}  string  "invalid request body or validation error"
+// @Failure      409   {string}  string  "email or phone number already exists"
+// @Router       /register [post]
 func Register(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

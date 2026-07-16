@@ -1,0 +1,168 @@
+basePath: /
+definitions:
+  auth.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  auth.LogoutRequest:
+    properties:
+      refresh_token:
+        type: string
+    type: object
+  auth.RefreshRequest:
+    properties:
+      refresh_token:
+        type: string
+    type: object
+  auth.RegisterRequest:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        type: string
+      phone_number:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API for PlantPal - a plant care and health monitoring application.
+  title: PlantPal API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate with email and password to receive access and refresh
+        tokens
+      parameters:
+      - description: Login credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid request body or missing fields
+          schema:
+            type: string
+        "401":
+          description: invalid credentials
+          schema:
+            type: string
+      summary: Login a user
+      tags:
+      - auth
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Revoke a refresh token to invalidate a session
+      parameters:
+      - description: Logout payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid request body or missing refresh_token
+          schema:
+            type: string
+        "404":
+          description: refresh token not found or already revoked
+          schema:
+            type: string
+      summary: Logout a user
+      tags:
+      - auth
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: Exchange a refresh token for a new access and refresh token pair
+        (single-use rotation)
+      parameters:
+      - description: Refresh token payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid request body or missing refresh_token
+          schema:
+            type: string
+        "401":
+          description: invalid, expired, or revoked refresh token
+          schema:
+            type: string
+      summary: Refresh tokens
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with full name, email, password, and
+        phone number
+      parameters:
+      - description: User registration payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: invalid request body or validation error
+          schema:
+            type: string
+        "409":
+          description: email or phone number already exists
+          schema:
+            type: string
+      summary: Register a new user
+      tags:
+      - auth
+swagger: "2.0"

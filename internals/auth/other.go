@@ -19,6 +19,17 @@ type LogoutRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+// Refresh godoc
+// @Summary      Refresh tokens
+// @Description  Exchange a refresh token for a new access and refresh token pair (single-use rotation)
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      RefreshRequest  true  "Refresh token payload"
+// @Success      200   {object}  map[string]string
+// @Failure      400   {string}  string  "invalid request body or missing refresh_token"
+// @Failure      401   {string}  string  "invalid, expired, or revoked refresh token"
+// @Router       /refresh [post]
 func Refresh(w http.ResponseWriter, r *http.Request) {
 	var req RefreshRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -107,6 +118,17 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Logout godoc
+// @Summary      Logout a user
+// @Description  Revoke a refresh token to invalidate a session
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      LogoutRequest  true  "Logout payload"
+// @Success      200   {object}  map[string]string
+// @Failure      400   {string}  string  "invalid request body or missing refresh_token"
+// @Failure      404   {string}  string  "refresh token not found or already revoked"
+// @Router       /logout [post]
 func Logout(w http.ResponseWriter, r *http.Request) {
 	var req LogoutRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
