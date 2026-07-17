@@ -13,6 +13,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// GetPlantReminders godoc
+// @Summary      Get plant reminders
+// @Description  Retrieve all reminders for a specific plant
+// @Tags         reminders
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Plant ID"
+// @Success      200  {array}   models.Reminder
+// @Failure      404  {object}  response.ErrorResponse
+// @Router       /plants/{id}/reminders [get]
 func GetPlantReminders(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
@@ -29,6 +39,15 @@ func GetPlantReminders(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, reminders)
 }
 
+// GetTodayReminders godoc
+// @Summary      Get today's reminders
+// @Description  Retrieve all incomplete reminders scheduled for today across all plants
+// @Tags         reminders
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {array}   models.Reminder
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /reminders/today [get]
 func GetTodayReminders(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 
@@ -51,6 +70,19 @@ type UpdateReminderRequest struct {
 	Snooze      bool  `json:"snooze"`
 }
 
+// UpdateReminder godoc
+// @Summary      Update a reminder
+// @Description  Mark a reminder as completed or snooze it
+// @Tags         reminders
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id    path      string                true  "Reminder ID"
+// @Param        body  body      UpdateReminderRequest  true  "Update payload"
+// @Success      200   {object}  models.Reminder
+// @Failure      400   {object}  response.ErrorResponse
+// @Failure      404   {object}  response.ErrorResponse
+// @Router       /reminders/{id} [put]
 func UpdateReminder(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	reminderID := mux.Vars(r)["id"]

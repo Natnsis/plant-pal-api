@@ -21,6 +21,16 @@ type UpdateCarePlanRequest struct {
 	HumidityRequirement   *string `json:"humidity_requirement"`
 }
 
+// GetCarePlan godoc
+// @Summary      Get care plan
+// @Description  Retrieve the care plan for a specific plant
+// @Tags         care-plan
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Plant ID"
+// @Success      200  {object}  models.CarePlan
+// @Failure      404  {object}  response.ErrorResponse
+// @Router       /plants/{id}/care-plan [get]
 func GetCarePlan(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
@@ -40,6 +50,19 @@ func GetCarePlan(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, carePlan)
 }
 
+// UpdateCarePlan godoc
+// @Summary      Update care plan
+// @Description  Update the care plan for a specific plant
+// @Tags         care-plan
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id    path      string                true  "Plant ID"
+// @Param        body  body      UpdateCarePlanRequest  true  "Fields to update"
+// @Success      200   {object}  models.CarePlan
+// @Failure      400   {object}  response.ErrorResponse
+// @Failure      404   {object}  response.ErrorResponse
+// @Router       /plants/{id}/care-plan [put]
 func UpdateCarePlan(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]

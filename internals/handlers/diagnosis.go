@@ -16,6 +16,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// StartDiagnosis godoc
+// @Summary      Start a plant diagnosis
+// @Description  Upload a plant image for AI-powered disease diagnosis and open a chat session
+// @Tags         diagnosis
+// @Accept       multipart/form-data
+// @Produce      json
+// @Security     BearerAuth
+// @Param        image  formData  file  true  "Plant image"
+// @Success      200    {object}  map[string]interface{}
+// @Failure      400    {object}  response.ErrorResponse
+// @Failure      500    {object}  response.ErrorResponse
+// @Router       /diagnosis [post]
 func StartDiagnosis(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 
@@ -98,6 +110,16 @@ func StartDiagnosis(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// GetDiagnosisChat godoc
+// @Summary      Get diagnosis chat history
+// @Description  Retrieve the chat history for a diagnosis session
+// @Tags         diagnosis
+// @Produce      json
+// @Security     BearerAuth
+// @Param        session_id  path  string  true  "Session ID"
+// @Success      200         {object}  map[string]interface{}
+// @Failure      404         {object}  response.ErrorResponse
+// @Router       /diagnosis/{session_id} [get]
 func GetDiagnosisChat(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	sessionID := mux.Vars(r)["session_id"]
@@ -118,6 +140,19 @@ func GetDiagnosisChat(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// SendChatMessage godoc
+// @Summary      Send a chat message
+// @Description  Send a follow-up message in a diagnosis chat session
+// @Tags         diagnosis
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        session_id  path      string              true  "Session ID"
+// @Param        body        body      ChatMessageRequest  true  "Chat message"
+// @Success      200         {object}  map[string]interface{}
+// @Failure      400         {object}  response.ErrorResponse
+// @Failure      404         {object}  response.ErrorResponse
+// @Router       /diagnosis/{session_id}/chat [post]
 func SendChatMessage(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	sessionID := mux.Vars(r)["session_id"]

@@ -18,6 +18,16 @@ type CreateGrowthRequest struct {
 	GrowthRateStatus string  `json:"growth_rate_status"`
 }
 
+// GetGrowthMetrics godoc
+// @Summary      Get growth metrics
+// @Description  Retrieve all growth metrics for a specific plant
+// @Tags         growth
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Plant ID"
+// @Success      200  {array}   models.GrowthMetric
+// @Failure      404  {object}  response.ErrorResponse
+// @Router       /plants/{id}/growth [get]
 func GetGrowthMetrics(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
@@ -34,6 +44,20 @@ func GetGrowthMetrics(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, metrics)
 }
 
+// CreateGrowthMetric godoc
+// @Summary      Create a growth metric
+// @Description  Record a new growth measurement for a plant
+// @Tags         growth
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id    path      string              true  "Plant ID"
+// @Param        body  body      CreateGrowthRequest  true  "Growth measurement"
+// @Success      201   {object}  models.GrowthMetric
+// @Failure      400   {object}  response.ErrorResponse
+// @Failure      404   {object}  response.ErrorResponse
+// @Failure      500   {object}  response.ErrorResponse
+// @Router       /plants/{id}/growth [post]
 func CreateGrowthMetric(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]

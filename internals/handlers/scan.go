@@ -15,6 +15,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// ScanPlant godoc
+// @Summary      Scan a plant
+// @Description  Upload a plant image for AI-powered identification and care plan generation
+// @Tags         scan
+// @Accept       multipart/form-data
+// @Produce      json
+// @Security     BearerAuth
+// @Param        image  formData  file  true  "Plant image"
+// @Success      200    {object}  map[string]interface{}
+// @Failure      400    {object}  response.ErrorResponse
+// @Failure      500    {object}  response.ErrorResponse
+// @Router       /scan [post]
 func ScanPlant(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 
@@ -132,6 +144,16 @@ func ScanPlant(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// GetScan godoc
+// @Summary      Get scan details
+// @Description  Retrieve details of a specific scan including analysis results
+// @Tags         scan
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Scan ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      404  {object}  response.ErrorResponse
+// @Router       /scan/{id} [get]
 func GetScan(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	scanID := mux.Vars(r)["id"]

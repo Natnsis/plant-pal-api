@@ -19,6 +19,15 @@ type UpdateNotificationRequest struct {
 	DefaultSnoozeDurationMinute *uint   `json:"default_snooze_duration_minute"`
 }
 
+// GetNotificationSettings godoc
+// @Summary      Get notification settings
+// @Description  Retrieve the notification preferences for the authenticated user
+// @Tags         notifications
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  models.Notification
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /notifications [get]
 func GetNotificationSettings(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 
@@ -37,6 +46,18 @@ func GetNotificationSettings(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, notification)
 }
 
+// UpdateNotificationSettings godoc
+// @Summary      Update notification settings
+// @Description  Update notification preferences for the authenticated user
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        body  body      UpdateNotificationRequest  true  "Settings to update"
+// @Success      200   {object}  models.Notification
+// @Failure      400   {object}  response.ErrorResponse
+// @Failure      404   {object}  response.ErrorResponse
+// @Router       /notifications [put]
 func UpdateNotificationSettings(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 

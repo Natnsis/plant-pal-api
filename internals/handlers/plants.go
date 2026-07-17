@@ -25,6 +25,15 @@ type UpdatePlantRequest struct {
 	Status      *string `json:"status"`
 }
 
+// ListPlants godoc
+// @Summary      List all plants
+// @Description  Get a list of all plants belonging to the authenticated user
+// @Tags         plants
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {array}   models.Plant
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /plants [get]
 func ListPlants(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 
@@ -37,6 +46,18 @@ func ListPlants(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, plants)
 }
 
+// CreatePlant godoc
+// @Summary      Create a new plant
+// @Description  Add a new plant to the user's collection
+// @Tags         plants
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        body  body      CreatePlantRequest  true  "Plant details"
+// @Success      201   {object}  models.Plant
+// @Failure      400   {object}  response.ErrorResponse
+// @Failure      500   {object}  response.ErrorResponse
+// @Router       /plants [post]
 func CreatePlant(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 
@@ -69,6 +90,16 @@ func CreatePlant(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusCreated, plant)
 }
 
+// GetPlant godoc
+// @Summary      Get a plant
+// @Description  Get detailed information about a specific plant
+// @Tags         plants
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Plant ID"
+// @Success      200  {object}  models.Plant
+// @Failure      404  {object}  response.ErrorResponse
+// @Router       /plants/{id} [get]
 func GetPlant(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
@@ -85,6 +116,19 @@ func GetPlant(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, plant)
 }
 
+// UpdatePlant godoc
+// @Summary      Update a plant
+// @Description  Update details of an existing plant
+// @Tags         plants
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id    path      string              true  "Plant ID"
+// @Param        body  body      UpdatePlantRequest  true  "Fields to update"
+// @Success      200   {object}  models.Plant
+// @Failure      400   {object}  response.ErrorResponse
+// @Failure      404   {object}  response.ErrorResponse
+// @Router       /plants/{id} [put]
 func UpdatePlant(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
@@ -124,6 +168,16 @@ func UpdatePlant(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, plant)
 }
 
+// DeletePlant godoc
+// @Summary      Delete a plant
+// @Description  Remove a plant from the user's collection
+// @Tags         plants
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Plant ID"
+// @Success      200  {object}  map[string]string
+// @Failure      404  {object}  response.ErrorResponse
+// @Router       /plants/{id} [delete]
 func DeletePlant(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]

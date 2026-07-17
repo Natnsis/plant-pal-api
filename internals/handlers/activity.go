@@ -19,6 +19,16 @@ type CreateActivityRequest struct {
 	PhotoUrl     string `json:"photo_url"`
 }
 
+// GetActivities godoc
+// @Summary      Get activity log
+// @Description  Retrieve all activity logs for a specific plant
+// @Tags         activities
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Plant ID"
+// @Success      200  {array}   models.ActivityLog
+// @Failure      404  {object}  response.ErrorResponse
+// @Router       /plants/{id}/activities [get]
 func GetActivities(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
@@ -35,6 +45,20 @@ func GetActivities(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, activities)
 }
 
+// CreateActivity godoc
+// @Summary      Log an activity
+// @Description  Record a new activity for a plant (watered, fertilized, repotted, etc.)
+// @Tags         activities
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id    path      string                  true  "Plant ID"
+// @Param        body  body      CreateActivityRequest  true  "Activity details"
+// @Success      201   {object}  models.ActivityLog
+// @Failure      400   {object}  response.ErrorResponse
+// @Failure      404   {object}  response.ErrorResponse
+// @Failure      500   {object}  response.ErrorResponse
+// @Router       /plants/{id}/activities [post]
 func CreateActivity(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
