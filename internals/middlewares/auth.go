@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"plantPal/internals/config"
+	"plantPal/internals/response"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -18,7 +19,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			http.Error(w, "authorization header required", http.StatusUnauthorized)
+			response.Error(w, http.StatusUnauthorized, "authorization header required")
 			return
 		}
 
@@ -33,19 +34,19 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return []byte(config.JwtSecret), nil
 		})
 		if err != nil || !token.Valid {
-			http.Error(w, "invalid or expired token", http.StatusUnauthorized)
+			response.Error(w, http.StatusUnauthorized, "invalid or expired token")
 			return
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
-			http.Error(w, "invalid token claims", http.StatusUnauthorized)
+			response.Error(w, http.StatusUnauthorized, "invalid token claims")
 			return
 		}
 
 		userIDFloat, ok := claims["user_id"].(float64)
 		if !ok {
-			http.Error(w, "invalid user_id in token", http.StatusUnauthorized)
+			response.Error(w, http.StatusUnauthorized, "invalid user_id in token")
 			return
 		}
 

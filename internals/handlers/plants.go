@@ -7,6 +7,7 @@ import (
 	"plantPal/internals/config"
 	"plantPal/internals/middlewares"
 	"plantPal/internals/models"
+	"plantPal/internals/response"
 
 	"github.com/gorilla/mux"
 )
@@ -24,51 +25,29 @@ type UpdatePlantRequest struct {
 	Status      *string `json:"status"`
 }
 
-// ListPlants godoc
-// @Summary      List user's plants
-// @Description  Get all plants belonging to the authenticated user
-// @Tags         plants
-// @Produce      json
-// @Security     BearerAuth
-// @Success      200 {array}  models.Plant
-// @Failure      401 {string} string "unauthorized"
-// @Router       /plants [get]
 func ListPlants(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 
 	var plants []models.Plant
 	if result := config.Db.Where("user_id = ?", userID).Preload("Species").Preload("CarePlans").Find(&plants); result.Error != nil {
-		http.Error(w, "failed to fetch plants", http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, "failed to fetch plants")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(plants)
+	response.JSON(w, http.StatusOK, plants)
 }
 
-// CreatePlant godoc
-// @Summary      Create a plant
-// @Description  Manually create a new plant entry
-// @Tags         plants
-// @Accept       json
-// @Produce      json
-// @Security     BearerAuth
-// @Param        body body CreatePlantRequest true "Plant payload"
-// @Success      201 {object} models.Plant
-// @Failure      400 {string} string "invalid request"
-// @Failure      401 {string} string "unauthorized"
-// @Router       /plants [post]
 func CreatePlant(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 
 	var req CreatePlantRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	if req.Nickname == "" {
-		http.Error(w, "nickname is required", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "nickname is required")
 		return
 	}
 
@@ -81,28 +60,15 @@ func CreatePlant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if result := config.Db.Create(&plant); result.Error != nil {
-		http.Error(w, "failed to create plant", http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, "failed to create plant")
 		return
 	}
 
 	config.Db.Preload("Species").First(&plant, plant.ID)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(plant)
+	response.JSON(w, http.StatusCreated, plant)
 }
 
-// GetPlant godoc
-// @Summary      Get plant details
-// @Description  Get a single plant with all related data
-// @Tags         plants
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path int true "Plant ID"
-// @Success      200 {object} models.Plant
-// @Failure      401 {string} string "unauthorized"
-// @Failure      404 {string} string "plant not found"
-// @Router       /plants/{id} [get]
 func GetPlant(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
@@ -112,41 +78,26 @@ func GetPlant(w http.ResponseWriter, r *http.Request) {
 		Preload("Species").Preload("CarePlans").Preload("Reminders").
 		Preload("GrowthMetrics").Preload("ActivityLogs").Preload("Scans").
 		First(&plant); result.Error != nil {
-		http.Error(w, "plant not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "plant not found")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(plant)
+	response.JSON(w, http.StatusOK, plant)
 }
 
-// UpdatePlant godoc
-// @Summary      Update a plant
-// @Description  Update plant details
-// @Tags         plants
-// @Accept       json
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path int true "Plant ID"
-// @Param        body body UpdatePlantRequest true "Update payload"
-// @Success      200 {object} models.Plant
-// @Failure      400 {string} string "invalid request"
-// @Failure      401 {string} string "unauthorized"
-// @Failure      404 {string} string "plant not found"
-// @Router       /plants/{id} [put]
 func UpdatePlant(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
 
 	var plant models.Plant
 	if result := config.Db.Where("id = ? AND user_id = ?", plantID, userID).First(&plant); result.Error != nil {
-		http.Error(w, "plant not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "plant not found")
 		return
 	}
 
 	var req UpdatePlantRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
@@ -170,33 +121,20 @@ func UpdatePlant(w http.ResponseWriter, r *http.Request) {
 
 	config.Db.Preload("Species").First(&plant, plant.ID)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(plant)
+	response.JSON(w, http.StatusOK, plant)
 }
 
-// DeletePlant godoc
-// @Summary      Delete a plant
-// @Description  Delete a plant and all its related data
-// @Tags         plants
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path int true "Plant ID"
-// @Success      200 {object} map[string]string
-// @Failure      401 {string} string "unauthorized"
-// @Failure      404 {string} string "plant not found"
-// @Router       /plants/{id} [delete]
 func DeletePlant(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
 
 	var plant models.Plant
 	if result := config.Db.Where("id = ? AND user_id = ?", plantID, userID).First(&plant); result.Error != nil {
-		http.Error(w, "plant not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "plant not found")
 		return
 	}
 
 	config.Db.Delete(&plant)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"message": "plant deleted successfully"})
+	response.JSON(w, http.StatusOK, map[string]string{"message": "plant deleted successfully"})
 }

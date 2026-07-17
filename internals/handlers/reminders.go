@@ -8,46 +8,27 @@ import (
 	"plantPal/internals/config"
 	"plantPal/internals/middlewares"
 	"plantPal/internals/models"
+	"plantPal/internals/response"
 
 	"github.com/gorilla/mux"
 )
 
-// GetPlantReminders godoc
-// @Summary      Get reminders for a plant
-// @Description  Get all reminders for a specific plant
-// @Tags         reminders
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path int true "Plant ID"
-// @Success      200 {array} models.Reminder
-// @Failure      401 {string} string "unauthorized"
-// @Router       /plants/{id}/reminders [get]
 func GetPlantReminders(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
 
 	var plant models.Plant
 	if result := config.Db.Where("id = ? AND user_id = ?", plantID, userID).First(&plant); result.Error != nil {
-		http.Error(w, "plant not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "plant not found")
 		return
 	}
 
 	var reminders []models.Reminder
 	config.Db.Where("plant_id = ?", plant.ID).Order("scheduled_time asc").Find(&reminders)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(reminders)
+	response.JSON(w, http.StatusOK, reminders)
 }
 
-// GetTodayReminders godoc
-// @Summary      Get today's reminders
-// @Description  Get all due reminders for the authenticated user today
-// @Tags         reminders
-// @Produce      json
-// @Security     BearerAuth
-// @Success      200 {array} models.Reminder
-// @Failure      401 {string} string "unauthorized"
-// @Router       /reminders/today [get]
 func GetTodayReminders(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 
@@ -62,8 +43,7 @@ func GetTodayReminders(w http.ResponseWriter, r *http.Request) {
 		Order("reminders.scheduled_time asc").
 		Find(&reminders)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(reminders)
+	response.JSON(w, http.StatusOK, reminders)
 }
 
 type UpdateReminderRequest struct {
@@ -71,20 +51,6 @@ type UpdateReminderRequest struct {
 	Snooze      bool  `json:"snooze"`
 }
 
-// UpdateReminder godoc
-// @Summary      Update a reminder
-// @Description  Complete or snooze a reminder
-// @Tags         reminders
-// @Accept       json
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path int true "Reminder ID"
-// @Param        body body UpdateReminderRequest true "Update payload"
-// @Success      200 {object} models.Reminder
-// @Failure      400 {string} string "invalid request"
-// @Failure      401 {string} string "unauthorized"
-// @Failure      404 {string} string "reminder not found"
-// @Router       /reminders/{id} [put]
 func UpdateReminder(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	reminderID := mux.Vars(r)["id"]
@@ -93,13 +59,13 @@ func UpdateReminder(w http.ResponseWriter, r *http.Request) {
 	if result := config.Db.Joins("JOIN plants ON plants.id = reminders.plant_id").
 		Where("reminders.id = ? AND plants.user_id = ?", reminderID, userID).
 		First(&reminder); result.Error != nil {
-		http.Error(w, "reminder not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "reminder not found")
 		return
 	}
 
 	var req UpdateReminderRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
@@ -108,7 +74,6 @@ func UpdateReminder(w http.ResponseWriter, r *http.Request) {
 		reminder.CompletedAt = time.Now()
 		config.Db.Save(&reminder)
 
-		// Update user task count
 		var plant models.Plant
 		config.Db.Where("id = ?", reminder.PlantID).First(&plant)
 		config.Db.Model(&models.User{}).Where("id = ?", plant.UserID).
@@ -119,6 +84,5 @@ func UpdateReminder(w http.ResponseWriter, r *http.Request) {
 		config.Db.Save(&reminder)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(reminder)
+	response.JSON(w, http.StatusOK, reminder)
 }

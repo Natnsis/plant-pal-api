@@ -8,6 +8,7 @@ import (
 	"plantPal/internals/config"
 	"plantPal/internals/middlewares"
 	"plantPal/internals/models"
+	"plantPal/internals/response"
 
 	"github.com/gorilla/mux"
 )
@@ -18,64 +19,40 @@ type CreateActivityRequest struct {
 	PhotoUrl     string `json:"photo_url"`
 }
 
-// GetActivities godoc
-// @Summary      Get activity log for a plant
-// @Description  Get all activities logged for a specific plant
-// @Tags         activity
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path int true "Plant ID"
-// @Success      200 {array} models.ActivityLog
-// @Failure      401 {string} string "unauthorized"
-// @Router       /plants/{id}/activities [get]
 func GetActivities(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
 
 	var plant models.Plant
 	if result := config.Db.Where("id = ? AND user_id = ?", plantID, userID).First(&plant); result.Error != nil {
-		http.Error(w, "plant not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "plant not found")
 		return
 	}
 
 	var activities []models.ActivityLog
 	config.Db.Where("plant_id = ?", plant.ID).Order("logged_date desc").Find(&activities)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(activities)
+	response.JSON(w, http.StatusOK, activities)
 }
 
-// CreateActivity godoc
-// @Summary      Log an activity
-// @Description  Log a care activity for a plant
-// @Tags         activity
-// @Accept       json
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path int true "Plant ID"
-// @Param        body body CreateActivityRequest true "Activity payload"
-// @Success      201 {object} models.ActivityLog
-// @Failure      400 {string} string "invalid request"
-// @Failure      401 {string} string "unauthorized"
-// @Router       /plants/{id}/activities [post]
 func CreateActivity(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
 
 	var plant models.Plant
 	if result := config.Db.Where("id = ? AND user_id = ?", plantID, userID).First(&plant); result.Error != nil {
-		http.Error(w, "plant not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "plant not found")
 		return
 	}
 
 	var req CreateActivityRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	if req.ActivityType == "" {
-		http.Error(w, "activity_type is required", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "activity_type is required")
 		return
 	}
 
@@ -88,13 +65,9 @@ func CreateActivity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if result := config.Db.Create(&activity); result.Error != nil {
-		http.Error(w, "failed to create activity", http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, "failed to create activity")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(activity)
+	response.JSON(w, http.StatusCreated, activity)
 }
-
-

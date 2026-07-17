@@ -7,6 +7,7 @@ import (
 	"plantPal/internals/config"
 	"plantPal/internals/middlewares"
 	"plantPal/internals/models"
+	"plantPal/internals/response"
 
 	"github.com/gorilla/mux"
 )
@@ -20,70 +21,44 @@ type UpdateCarePlanRequest struct {
 	HumidityRequirement   *string `json:"humidity_requirement"`
 }
 
-// GetCarePlan godoc
-// @Summary      Get care plan for a plant
-// @Description  Get the care plan associated with a plant
-// @Tags         care-plan
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path int true "Plant ID"
-// @Success      200 {object} models.CarePlan
-// @Failure      401 {string} string "unauthorized"
-// @Failure      404 {string} string "care plan not found"
-// @Router       /plants/{id}/care-plan [get]
 func GetCarePlan(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
 
 	var plant models.Plant
 	if result := config.Db.Where("id = ? AND user_id = ?", plantID, userID).First(&plant); result.Error != nil {
-		http.Error(w, "plant not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "plant not found")
 		return
 	}
 
 	var carePlan models.CarePlan
 	if result := config.Db.Where("plant_id = ?", plant.ID).First(&carePlan); result.Error != nil {
-		http.Error(w, "care plan not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "care plan not found")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(carePlan)
+	response.JSON(w, http.StatusOK, carePlan)
 }
 
-// UpdateCarePlan godoc
-// @Summary      Update care plan
-// @Description  Update the care plan for a plant
-// @Tags         care-plan
-// @Accept       json
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path int true "Plant ID"
-// @Param        body body UpdateCarePlanRequest true "Update payload"
-// @Success      200 {object} models.CarePlan
-// @Failure      400 {string} string "invalid request"
-// @Failure      401 {string} string "unauthorized"
-// @Failure      404 {string} string "care plan not found"
-// @Router       /plants/{id}/care-plan [put]
 func UpdateCarePlan(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
 
 	var plant models.Plant
 	if result := config.Db.Where("id = ? AND user_id = ?", plantID, userID).First(&plant); result.Error != nil {
-		http.Error(w, "plant not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "plant not found")
 		return
 	}
 
 	var carePlan models.CarePlan
 	if result := config.Db.Where("plant_id = ?", plant.ID).First(&carePlan); result.Error != nil {
-		http.Error(w, "care plan not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "care plan not found")
 		return
 	}
 
 	var req UpdateCarePlanRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
@@ -111,6 +86,5 @@ func UpdateCarePlan(w http.ResponseWriter, r *http.Request) {
 		config.Db.Model(&carePlan).Updates(updates)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(carePlan)
+	response.JSON(w, http.StatusOK, carePlan)
 }

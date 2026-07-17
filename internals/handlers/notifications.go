@@ -7,6 +7,7 @@ import (
 	"plantPal/internals/config"
 	"plantPal/internals/middlewares"
 	"plantPal/internals/models"
+	"plantPal/internals/response"
 )
 
 type UpdateNotificationRequest struct {
@@ -18,60 +19,36 @@ type UpdateNotificationRequest struct {
 	DefaultSnoozeDurationMinute *uint   `json:"default_snooze_duration_minute"`
 }
 
-// GetNotificationSettings godoc
-// @Summary      Get notification settings
-// @Description  Get the notification preferences for the authenticated user
-// @Tags         notifications
-// @Produce      json
-// @Security     BearerAuth
-// @Success      200 {object} models.Notification
-// @Failure      401 {string} string "unauthorized"
-// @Failure      404 {string} string "settings not found"
-// @Router       /notifications [get]
 func GetNotificationSettings(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 
 	var notification models.Notification
 	if result := config.Db.Where("user_id = ?", userID).First(&notification); result.Error != nil {
-		// Create default settings if none exist
 		notification = models.Notification{
-			UserID:                userID,
-			NotificationEnabled:   true,
-			DailySummaryEnabled:   false,
-			SoundAlertEnabled:     true,
-			VibrationEnabled:      true,
+			UserID:              userID,
+			NotificationEnabled: true,
+			DailySummaryEnabled: false,
+			SoundAlertEnabled:   true,
+			VibrationEnabled:    true,
 		}
 		config.Db.Create(&notification)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(notification)
+	response.JSON(w, http.StatusOK, notification)
 }
 
-// UpdateNotificationSettings godoc
-// @Summary      Update notification settings
-// @Description  Update the notification preferences for the authenticated user
-// @Tags         notifications
-// @Accept       json
-// @Produce      json
-// @Security     BearerAuth
-// @Param        body body UpdateNotificationRequest true "Settings payload"
-// @Success      200 {object} models.Notification
-// @Failure      400 {string} string "invalid request"
-// @Failure      401 {string} string "unauthorized"
-// @Router       /notifications [put]
 func UpdateNotificationSettings(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 
 	var notification models.Notification
 	if result := config.Db.Where("user_id = ?", userID).First(&notification); result.Error != nil {
-		http.Error(w, "settings not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "settings not found")
 		return
 	}
 
 	var req UpdateNotificationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
@@ -99,6 +76,5 @@ func UpdateNotificationSettings(w http.ResponseWriter, r *http.Request) {
 		config.Db.Model(&notification).Updates(updates)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(notification)
+	response.JSON(w, http.StatusOK, notification)
 }

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,42 +9,30 @@ import (
 	"plantPal/internals/config"
 	"plantPal/internals/middlewares"
 	"plantPal/internals/models"
+	"plantPal/internals/response"
 	"plantPal/internals/services"
 
 	"github.com/gorilla/mux"
 )
 
-// ScanPlant godoc
-// @Summary      Scan a plant
-// @Description  Upload a plant image for identification. Returns retake=true if confidence is low.
-// @Tags         scan
-// @Accept       multipart/form-data
-// @Produce      json
-// @Security     BearerAuth
-// @Param        image formData file true "Plant image"
-// @Success      200 {object} map[string]interface{}
-// @Failure      400 {string} string "missing image"
-// @Failure      401 {string} string "unauthorized"
-// @Failure      500 {string} string "internal error"
-// @Router       /scan [post]
 func ScanPlant(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "failed to parse form")
 		return
 	}
 
 	file, fileHeader, err := r.FormFile("image")
 	if err != nil {
-		http.Error(w, "image file is required", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "image file is required")
 		return
 	}
 	defer file.Close()
 
 	imageURL, err := services.UploadImage(file, fileHeader)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("failed to upload image: %s", err.Error()), http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, fmt.Sprintf("failed to upload image: %s", err.Error()))
 		return
 	}
 
@@ -54,36 +41,31 @@ func ScanPlant(w http.ResponseWriter, r *http.Request) {
 
 	identification, err := services.IdentifyPlant(ctx, imageURL)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("failed to analyze plant: %s", err.Error()), http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, fmt.Sprintf("failed to analyze plant: %s", err.Error()))
 		return
 	}
 
-	// Create scan record
 	scan := models.Scan{
 		UserID:           userID,
 		CapturedImageUrl: imageURL,
 		ConfidenceScore:  identification.ConfidenceScore,
 	}
 
-	// If confidence is low, return retake request
 	if identification.ConfidenceScore < 0.7 {
 		scan.Retake = true
 		config.Db.Create(&scan)
 
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"retake":            true,
-			"confidence_score":  identification.ConfidenceScore,
-			"message":           "Could not confidently identify this plant. Please retake with a clearer image.",
-			"partial_data":      identification,
-			"scan_id":           scan.ID,
+		response.JSON(w, http.StatusOK, map[string]interface{}{
+			"retake":             true,
+			"confidence_score":   identification.ConfidenceScore,
+			"message":            "Could not confidently identify this plant. Please retake with a clearer image.",
+			"partial_data":       identification,
+			"scan_id":            scan.ID,
 			"captured_image_url": imageURL,
 		})
 		return
 	}
 
-	// Good confidence - create full analysis
-	// Upsert species by scientific name
 	var species models.Species
 	result := config.Db.Where("scientific_name = ?", identification.ScientificName).First(&species)
 	if result.Error != nil {
@@ -97,7 +79,6 @@ func ScanPlant(w http.ResponseWriter, r *http.Request) {
 		config.Db.Create(&species)
 	}
 
-	// Create plant
 	plant := models.Plant{
 		UserID:      userID,
 		SpeciesID:   &species.ID,
@@ -107,11 +88,9 @@ func ScanPlant(w http.ResponseWriter, r *http.Request) {
 	}
 	config.Db.Create(&plant)
 
-	// Update scan with plant ID
 	scan.PlantID = plant.ID
 	config.Db.Save(&scan)
 
-	// Create analysis result
 	analysis := models.AiAnalysisResult{
 		ScanID:             scan.ID,
 		AiModelVersion:     "gemini-1.5-flash",
@@ -126,7 +105,6 @@ func ScanPlant(w http.ResponseWriter, r *http.Request) {
 	scan.AnalysisID = analysis.ID
 	config.Db.Save(&scan)
 
-	// Create care plan
 	carePlan := models.CarePlan{
 		PlantID:               plant.ID,
 		WateringFrequencyDays: identification.CareRecommendations.WateringFrequencyDays,
@@ -138,35 +116,22 @@ func ScanPlant(w http.ResponseWriter, r *http.Request) {
 	}
 	config.Db.Create(&carePlan)
 
-	// Generate reminders based on care plan
 	now := time.Now()
 	createReminderIfNotExists(plant.ID, models.WaterTask, now.AddDate(0, 0, int(identification.CareRecommendations.WateringFrequencyDays)))
 	createReminderIfNotExists(plant.ID, models.FertilizeTask, now.AddDate(0, 1, 0))
 	createReminderIfNotExists(plant.ID, models.RotateTask, now.AddDate(0, 0, 7))
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"retake":           false,
-		"scan_id":          scan.ID,
-		"plant":            plant,
-		"species":          species,
-		"analysis":         analysis,
-		"care_plan":        carePlan,
+	response.JSON(w, http.StatusOK, map[string]interface{}{
+		"retake":             false,
+		"scan_id":            scan.ID,
+		"plant":              plant,
+		"species":            species,
+		"analysis":           analysis,
+		"care_plan":          carePlan,
 		"captured_image_url": imageURL,
 	})
 }
 
-// GetScan godoc
-// @Summary      Get scan details
-// @Description  Get details of a specific scan
-// @Tags         scan
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path int true "Scan ID"
-// @Success      200 {object} models.Scan
-// @Failure      401 {string} string "unauthorized"
-// @Failure      404 {string} string "scan not found"
-// @Router       /scan/{id} [get]
 func GetScan(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	scanID := mux.Vars(r)["id"]
@@ -174,15 +139,14 @@ func GetScan(w http.ResponseWriter, r *http.Request) {
 	var scan models.Scan
 	if result := config.Db.Where("id = ? AND user_id = ?", scanID, userID).
 		Preload("Plant").Preload("Plant.Species").First(&scan); result.Error != nil {
-		http.Error(w, "scan not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "scan not found")
 		return
 	}
 
 	var analysis models.AiAnalysisResult
 	config.Db.Where("scan_id = ?", scan.ID).First(&analysis)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	response.JSON(w, http.StatusOK, map[string]interface{}{
 		"scan":     scan,
 		"analysis": analysis,
 	})

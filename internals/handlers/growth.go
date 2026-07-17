@@ -8,6 +8,7 @@ import (
 	"plantPal/internals/config"
 	"plantPal/internals/middlewares"
 	"plantPal/internals/models"
+	"plantPal/internals/response"
 
 	"github.com/gorilla/mux"
 )
@@ -17,59 +18,35 @@ type CreateGrowthRequest struct {
 	GrowthRateStatus string  `json:"growth_rate_status"`
 }
 
-// GetGrowthMetrics godoc
-// @Summary      Get growth metrics for a plant
-// @Description  Get all growth records for a specific plant
-// @Tags         growth
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path int true "Plant ID"
-// @Success      200 {array} models.GrowthMetric
-// @Failure      401 {string} string "unauthorized"
-// @Router       /plants/{id}/growth [get]
 func GetGrowthMetrics(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
 
 	var plant models.Plant
 	if result := config.Db.Where("id = ? AND user_id = ?", plantID, userID).First(&plant); result.Error != nil {
-		http.Error(w, "plant not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "plant not found")
 		return
 	}
 
 	var metrics []models.GrowthMetric
 	config.Db.Where("plant_id = ?", plant.ID).Order("recorded_date desc").Find(&metrics)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(metrics)
+	response.JSON(w, http.StatusOK, metrics)
 }
 
-// CreateGrowthMetric godoc
-// @Summary      Record a growth metric
-// @Description  Record a new growth measurement for a plant
-// @Tags         growth
-// @Accept       json
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path int true "Plant ID"
-// @Param        body body CreateGrowthRequest true "Growth payload"
-// @Success      201 {object} models.GrowthMetric
-// @Failure      400 {string} string "invalid request"
-// @Failure      401 {string} string "unauthorized"
-// @Router       /plants/{id}/growth [post]
 func CreateGrowthMetric(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
 	plantID := mux.Vars(r)["id"]
 
 	var plant models.Plant
 	if result := config.Db.Where("id = ? AND user_id = ?", plantID, userID).First(&plant); result.Error != nil {
-		http.Error(w, "plant not found", http.StatusNotFound)
+		response.Error(w, http.StatusNotFound, "plant not found")
 		return
 	}
 
 	var req CreateGrowthRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
@@ -81,11 +58,9 @@ func CreateGrowthMetric(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if result := config.Db.Create(&metric); result.Error != nil {
-		http.Error(w, "failed to create growth metric", http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, "failed to create growth metric")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(metric)
+	response.JSON(w, http.StatusCreated, metric)
 }
