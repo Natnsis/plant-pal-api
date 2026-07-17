@@ -15,10 +15,10 @@ var Db *gorm.DB
 func ConnectToDb() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("unable to load env file")
-		return
+		fmt.Println("no .env file found, using environment variables")
+	} else {
+		fmt.Println("env is loaded")
 	}
-	fmt.Println("env is loaded")
 
 	db_url := os.Getenv("LOCAL_DB_URL")
 	if db_url == "" {

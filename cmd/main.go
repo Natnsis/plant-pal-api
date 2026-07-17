@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"plantPal/internals/config"
 	"plantPal/internals/middlewares"
@@ -61,9 +62,14 @@ func main() {
 	routes.ScanRoutes(apiRouter)
 	routes.CareRoutes(apiRouter)
 
-	fmt.Println("server is running on port http://localhost:8080")
-	fmt.Println("swagger docs available at http://localhost:8080/docs/")
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	fmt.Printf("server is running on port http://localhost:%s\n", port)
+	fmt.Printf("swagger docs available at http://localhost:%s/docs/\n", port)
+	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal("an error occured: ", err)
 	}
 }
