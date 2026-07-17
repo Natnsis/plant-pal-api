@@ -20,7 +20,7 @@ import (
 // @title           PlantPal API
 // @version         1.0
 // @description     API for PlantPal - a plant care and health monitoring application.
-// @host            localhost:8080
+// @host            plant-pal-api-ohhx.onrender.com
 // @BasePath        /
 // @securityDefinitions.apikey BearerAuth
 // @in header
