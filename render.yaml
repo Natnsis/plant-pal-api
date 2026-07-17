@@ -4,14 +4,6 @@ services:
     runtime: docker
     dockerfilePath: ./Dockerfile
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: plantpal-db
-          property: connectionString
-      - key: LOCAL_DB_URL
-        fromDatabase:
-          name: plantpal-db
-          property: connectionString
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: GEMINI_API_KEY

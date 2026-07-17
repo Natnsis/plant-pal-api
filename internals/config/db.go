@@ -22,10 +22,13 @@ func ConnectToDb() {
 
 	db_url := os.Getenv("LOCAL_DB_URL")
 	if db_url == "" {
+		db_url = os.Getenv("DATABASE_URL")
+	}
+	if db_url == "" {
 		log.Fatal("no database url found")
 		return
 	}
-	fmt.Println("local db is fetched")
+	fmt.Println("db url is fetched")
 
 	conn, err := gorm.Open(postgres.Open(db_url), &gorm.Config{})
 	if err != nil {
