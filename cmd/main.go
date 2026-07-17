@@ -37,11 +37,13 @@ func main() {
 
 	// initialze mux
 	r := mux.NewRouter()
+	r.Use(middlewares.CorsMiddleware)
 
-	// public auth routes (no middleware)
-	r.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
-		// handled by auth routes below
-	}).Methods("OPTIONS")
+	// health check
+	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"status": "ok"}`))
+	}).Methods("GET")
 
 	// swagger docs endpoint (public)
 	r.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
