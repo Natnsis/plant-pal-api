@@ -145,7 +145,7 @@ func ConfirmScan(w http.ResponseWriter, r *http.Request) {
 
 	analysis := models.AiAnalysisResult{
 		ScanID:             scan.ID,
-		AiModelVersion:     "gemini-1.5-flash",
+		AiModelVersion:     "gemini-2.5-flash",
 		ConfidenceScore:    identification.ConfidenceScore,
 		AnalysisType:       models.IdentificationAnalysisType,
 		DetectedSymptoms:   models.StringList(identification.DetectedSymptoms),
