@@ -89,7 +89,7 @@ func StartDiagnosis(w http.ResponseWriter, r *http.Request) {
 
 	analysis := models.AiAnalysisResult{
 		ScanID:             scan.ID,
-		AiModelVersion:     "gemini-2.5-flash",
+		AiModelVersion:     "gemini-2.0-flash",
 		ConfidenceScore:    1.0,
 		AnalysisType:       models.DiagnosisAnalysisType,
 		PrimaryAssessment:  diagnosis.IssueDescription,

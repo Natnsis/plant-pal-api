@@ -66,7 +66,7 @@ func IdentifyPlant(ctx context.Context, imageURL string) (*PlantIdentification, 
 		return nil, fmt.Errorf("failed to download image: %w", err)
 	}
 
-	model := client.GenerativeModel("gemini-2.5-flash")
+	model := client.GenerativeModel("gemini-2.0-flash")
 	model.ResponseMIMEType = "application/json"
 
 	prompt := `You are a plant identification expert. Analyze this plant image and return a JSON object with the following fields:
@@ -130,7 +130,7 @@ func DiagnosePlant(ctx context.Context, imageURL string) (*DiagnosisResult, erro
 		return nil, fmt.Errorf("failed to download image: %w", err)
 	}
 
-	model := client.GenerativeModel("gemini-2.5-flash")
+	model := client.GenerativeModel("gemini-2.0-flash")
 	model.ResponseMIMEType = "application/json"
 
 	prompt := `You are a plant diagnosis expert. Analyze this plant image and diagnose any issues.
@@ -179,7 +179,7 @@ func ChatWithAI(ctx context.Context, history []ChatMessage, newMessage string) (
 	}
 	defer client.Close()
 
-	model := client.GenerativeModel("gemini-2.5-flash")
+	model := client.GenerativeModel("gemini-2.0-flash")
 
 	var chatHistory []*genai.Content
 	for _, msg := range history {
