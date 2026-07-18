@@ -1,9 +1,9 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"mime/multipart"
 
 	"plantPal/internals/config"
@@ -11,17 +11,17 @@ import (
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 )
 
-func UploadImage(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
+func UploadImage(file multipart.File, _ *multipart.FileHeader) (string, error) {
 	ctx := context.Background()
 
-	fileBytes, err := io.ReadAll(file)
-	if err != nil {
+	buf := new(bytes.Buffer)
+	if _, err := buf.ReadFrom(file); err != nil {
 		return "", fmt.Errorf("failed to read file: %w", err)
 	}
 
 	result, err := config.Cloudinary.Upload.Upload(
 		ctx,
-		string(fileBytes),
+		bytes.NewReader(buf.Bytes()),
 		uploader.UploadParams{
 			Folder: "plantpal",
 		},

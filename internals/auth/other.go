@@ -71,14 +71,20 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 
 	claims, _ := token.Claims.(jwt.MapClaims)
 	userID := claims["user_id"].(float64)
+	name, _ := claims["name"].(string)
+	email, _ := claims["email"].(string)
 
 	accessClaims := jwt.MapClaims{
 		"user_id": uint(userID),
+		"name":    name,
+		"email":   email,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	}
 
 	refreshClaims := jwt.MapClaims{
 		"user_id": uint(userID),
+		"name":    name,
+		"email":   email,
 		"exp":     time.Now().Add(time.Hour * 24 * 15).Unix(),
 	}
 

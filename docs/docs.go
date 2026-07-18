@@ -1002,7 +1002,9 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "400": {
@@ -1125,7 +1127,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Upload a plant image for AI-powered identification and care plan generation",
+                "description": "Upload a plant image for AI-powered identification. Returns a preview for the user to confirm before saving.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -1135,7 +1137,7 @@ const docTemplate = `{
                 "tags": [
                     "scan"
                 ],
-                "summary": "Scan a plant",
+                "summary": "Identify a plant",
                 "parameters": [
                     {
                         "type": "file",
@@ -1208,6 +1210,71 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/scan/{id}/confirm": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Confirm that the identified plant is correct, creating species, plant, care plan, and reminders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scan"
+                ],
+                "summary": "Confirm a scan and create plant",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Scan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Confirmation payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internals_handlers.ConfirmScanRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/plantPal_internals_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/plantPal_internals_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/plantPal_internals_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1261,9 +1328,6 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string"
-                },
-                "phone_number": {
-                    "type": "string"
                 }
             }
         },
@@ -1271,6 +1335,17 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "internals_handlers.ConfirmScanRequest": {
+            "type": "object",
+            "properties": {
+                "location": {
+                    "type": "string"
+                },
+                "nickname": {
                     "type": "string"
                 }
             }
@@ -1724,6 +1799,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "json_identification_payload": {
+                    "type": "string"
+                },
                 "plant_id": {
                     "type": "integer"
                 },
@@ -1840,9 +1918,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/plantPal_internals_models.Notification"
                     }
-                },
-                "phone_number": {
-                    "type": "string"
                 },
                 "plants": {
                     "type": "array",

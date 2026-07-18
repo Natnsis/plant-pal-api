@@ -4,19 +4,20 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"plantPal/internals/config"
 	"plantPal/internals/models"
 	"plantPal/internals/response"
 
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type RegisterRequest struct {
-	FullName    string `json:"full_name"`
-	Email       string `json:"email"`
-	Password    string `json:"password"`
-	PhoneNumber string `json:"phone_number"`
+	FullName string `json:"full_name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 // Register godoc
@@ -26,7 +27,7 @@ type RegisterRequest struct {
 // @Accept       json
 // @Produce      json
 // @Param        body  body      RegisterRequest  true  "User registration payload"
-// @Success      201   {object}  map[string]interface{}
+// @Success      201   {object}  map[string]string
 // @Failure      400   {object}  response.ErrorResponse
 // @Failure      409   {object}  response.ErrorResponse
 // @Failure      500   {object}  response.ErrorResponse
@@ -38,8 +39,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.FullName == "" || req.Email == "" || req.Password == "" || req.PhoneNumber == "" {
-		response.Error(w, http.StatusBadRequest, "full_name, email, password, and phone_number are required")
+	if req.FullName == "" || req.Email == "" || req.Password == "" {
+		response.Error(w, http.StatusBadRequest, "full_name, email, and password are required")
 		return
 	}
 
@@ -60,10 +61,9 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := models.User{
-		Email:       req.Email,
-		Password:    string(hashedPassword),
-		FullName:    req.FullName,
-		PhoneNumber: req.PhoneNumber,
+		Email:    req.Email,
+		Password: string(hashedPassword),
+		FullName: req.FullName,
 	}
 
 	if result := config.Db.Create(&user); result.Error != nil {
@@ -71,10 +71,47 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.JSON(w, http.StatusCreated, map[string]interface{}{
-		"id":         user.ID,
-		"full_name":  user.FullName,
-		"email":      user.Email,
-		"phone":      user.PhoneNumber,
+	accessClaims := jwt.MapClaims{
+		"user_id": user.ID,
+		"name":    user.FullName,
+		"email":   user.Email,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+	}
+
+	refreshClaims := jwt.MapClaims{
+		"user_id": user.ID,
+		"name":    user.FullName,
+		"email":   user.Email,
+		"exp":     time.Now().Add(time.Hour * 24 * 15).Unix(),
+	}
+
+	unsignedAccess := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	unsignedRefresh := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+
+	accessToken, err := unsignedAccess.SignedString([]byte(config.JwtSecret))
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "failed to generate access token")
+		return
+	}
+
+	refreshToken, err := unsignedRefresh.SignedString([]byte(config.JwtSecret))
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "failed to generate refresh token")
+		return
+	}
+
+	dbToken := models.RefreshToken{
+		Token:     refreshToken,
+		UserID:    user.ID,
+		ExpiresAt: time.Now().Add(time.Hour * 24 * 15),
+	}
+	if result := config.Db.Create(&dbToken); result.Error != nil {
+		response.Error(w, http.StatusInternalServerError, "failed to store refresh token")
+		return
+	}
+
+	response.JSON(w, http.StatusCreated, map[string]string{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
 	})
 }

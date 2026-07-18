@@ -33,12 +33,17 @@ definitions:
         type: string
       password:
         type: string
-      phone_number:
-        type: string
     type: object
   internals_handlers.ChatMessageRequest:
     properties:
       message:
+        type: string
+    type: object
+  internals_handlers.ConfirmScanRequest:
+    properties:
+      location:
+        type: string
+      nickname:
         type: string
     type: object
   internals_handlers.CreateActivityRequest:
@@ -342,6 +347,8 @@ definitions:
         $ref: '#/definitions/gorm.DeletedAt'
       id:
         type: integer
+      json_identification_payload:
+        type: string
       plant_id:
         type: integer
       retake:
@@ -424,8 +431,6 @@ definitions:
         items:
           $ref: '#/definitions/plantPal_internals_models.Notification'
         type: array
-      phone_number:
-        type: string
       plants:
         items:
           $ref: '#/definitions/plantPal_internals_models.Plant'
@@ -1083,7 +1088,8 @@ paths:
         "201":
           description: Created
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "400":
           description: Bad Request
@@ -1163,8 +1169,8 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Upload a plant image for AI-powered identification and care plan
-        generation
+      description: Upload a plant image for AI-powered identification. Returns a preview
+        for the user to confirm before saving.
       parameters:
       - description: Plant image
         in: formData
@@ -1189,7 +1195,7 @@ paths:
             $ref: '#/definitions/plantPal_internals_response.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Scan a plant
+      summary: Identify a plant
       tags:
       - scan
   /scan/{id}:
@@ -1216,6 +1222,49 @@ paths:
       security:
       - BearerAuth: []
       summary: Get scan details
+      tags:
+      - scan
+  /scan/{id}/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Confirm that the identified plant is correct, creating species,
+        plant, care plan, and reminders
+      parameters:
+      - description: Scan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Confirmation payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internals_handlers.ConfirmScanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/plantPal_internals_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/plantPal_internals_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/plantPal_internals_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Confirm a scan and create plant
       tags:
       - scan
 securityDefinitions:

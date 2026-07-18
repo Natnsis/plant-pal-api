@@ -55,11 +55,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	accessClaims := jwt.MapClaims{
 		"user_id": user.ID,
+		"name":    user.FullName,
+		"email":   user.Email,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	}
 
 	refreshClaims := jwt.MapClaims{
 		"user_id": user.ID,
+		"name":    user.FullName,
+		"email":   user.Email,
 		"exp":     time.Now().Add(time.Hour * 24 * 15).Unix(),
 	}
 

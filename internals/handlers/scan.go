@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -16,8 +17,8 @@ import (
 )
 
 // ScanPlant godoc
-// @Summary      Scan a plant
-// @Description  Upload a plant image for AI-powered identification and care plan generation
+// @Summary      Identify a plant
+// @Description  Upload a plant image for AI-powered identification. Returns a preview for the user to confirm before saving.
 // @Tags         scan
 // @Accept       multipart/form-data
 // @Produce      json
@@ -57,51 +58,90 @@ func ScanPlant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	identificationJSON, _ := json.Marshal(identification)
+
 	scan := models.Scan{
-		UserID:           userID,
-		CapturedImageUrl: imageURL,
-		ConfidenceScore:  identification.ConfidenceScore,
+		UserID:                    userID,
+		CapturedImageUrl:          imageURL,
+		ConfidenceScore:           identification.ConfidenceScore,
+		JsonIdentificationPayload: string(identificationJSON),
+		Retake:                    identification.ConfidenceScore < 0.7,
 	}
+	config.Db.Create(&scan)
 
-	if identification.ConfidenceScore < 0.7 {
-		scan.Retake = true
-		config.Db.Create(&scan)
+	response.JSON(w, http.StatusOK, map[string]interface{}{
+		"scan_id":            scan.ID,
+		"retake":             scan.Retake,
+		"confidence_score":   identification.ConfidenceScore,
+		"identification":     identification,
+		"captured_image_url": imageURL,
+	})
+}
 
-		response.JSON(w, http.StatusOK, map[string]interface{}{
-			"retake":             true,
-			"confidence_score":   identification.ConfidenceScore,
-			"message":            "Could not confidently identify this plant. Please retake with a clearer image.",
-			"partial_data":       identification,
-			"scan_id":            scan.ID,
-			"captured_image_url": imageURL,
-		})
+// ConfirmScanRequest godoc
+// @Summary      Confirm a scan and create plant
+// @Description  Confirm that the identified plant is correct, creating species, plant, care plan, and reminders
+// @Tags         scan
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id    path      string            true  "Scan ID"
+// @Param        body  body      ConfirmScanRequest  true  "Confirmation payload"
+// @Success      200   {object}  map[string]interface{}
+// @Failure      400   {object}  response.ErrorResponse
+// @Failure      404   {object}  response.ErrorResponse
+// @Failure      500   {object}  response.ErrorResponse
+// @Router       /scan/{id}/confirm [post]
+func ConfirmScan(w http.ResponseWriter, r *http.Request) {
+	userID := middlewares.GetUserID(r)
+	scanID := mux.Vars(r)["id"]
+
+	var scan models.Scan
+	if result := config.Db.Where("id = ? AND user_id = ?", scanID, userID).First(&scan); result.Error != nil {
+		response.Error(w, http.StatusNotFound, "scan not found")
 		return
 	}
 
-	var species models.Species
-	result := config.Db.Where("scientific_name = ?", identification.ScientificName).First(&species)
-	if result.Error != nil {
-		species = models.Species{
-			CommonName:      identification.CommonName,
-			ScientificName:  identification.ScientificName,
-			Family:          identification.Family,
-			Origin:          identification.Origin,
-			DifficultyLevel: models.MediumDifficulty,
-		}
-		config.Db.Create(&species)
+	if scan.PlantID != 0 {
+		response.Error(w, http.StatusBadRequest, "scan already confirmed")
+		return
 	}
+
+	var req ConfirmScanRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	var identification services.PlantIdentification
+	if err := json.Unmarshal([]byte(scan.JsonIdentificationPayload), &identification); err != nil {
+		response.Error(w, http.StatusInternalServerError, "failed to parse identification data")
+		return
+	}
+
+	nickname := req.Nickname
+	if nickname == "" {
+		nickname = identification.CommonName
+	}
+
+	species := models.Species{
+		CommonName:      identification.CommonName,
+		ScientificName:  identification.ScientificName,
+		Family:          identification.Family,
+		Origin:          identification.Origin,
+		DifficultyLevel: models.MediumDifficulty,
+	}
+	config.Db.Create(&species)
 
 	plant := models.Plant{
 		UserID:      userID,
 		SpeciesID:   &species.ID,
-		Nickname:    identification.CommonName,
+		Nickname:    nickname,
+		Location:    req.Location,
 		HealthScore: int(identification.ConfidenceScore * 100),
 		Status:      models.GoodPlantStatus,
 	}
 	config.Db.Create(&plant)
-
-	scan.PlantID = plant.ID
-	config.Db.Save(&scan)
 
 	analysis := models.AiAnalysisResult{
 		ScanID:             scan.ID,
@@ -113,9 +153,6 @@ func ScanPlant(w http.ResponseWriter, r *http.Request) {
 		TreatmentPlanSteps: joinStrings(identification.TreatmentSteps),
 	}
 	config.Db.Create(&analysis)
-
-	scan.AnalysisID = analysis.ID
-	config.Db.Save(&scan)
 
 	carePlan := models.CarePlan{
 		PlantID:               plant.ID,
@@ -133,14 +170,17 @@ func ScanPlant(w http.ResponseWriter, r *http.Request) {
 	createReminderIfNotExists(plant.ID, models.FertilizeTask, now.AddDate(0, 1, 0))
 	createReminderIfNotExists(plant.ID, models.RotateTask, now.AddDate(0, 0, 7))
 
+	scan.PlantID = plant.ID
+	scan.AnalysisID = analysis.ID
+	config.Db.Save(&scan)
+
 	response.JSON(w, http.StatusOK, map[string]interface{}{
-		"retake":             false,
 		"scan_id":            scan.ID,
 		"plant":              plant,
 		"species":            species,
 		"analysis":           analysis,
 		"care_plan":          carePlan,
-		"captured_image_url": imageURL,
+		"captured_image_url": scan.CapturedImageUrl,
 	})
 }
 
@@ -172,6 +212,11 @@ func GetScan(w http.ResponseWriter, r *http.Request) {
 		"scan":     scan,
 		"analysis": analysis,
 	})
+}
+
+type ConfirmScanRequest struct {
+	Nickname string `json:"nickname"`
+	Location string `json:"location"`
 }
 
 func createReminderIfNotExists(plantID uint, taskType models.TaskType, scheduledTime time.Time) {
