@@ -26,10 +26,22 @@ import (
 // @Param        image  formData  file  true  "Plant image"
 // @Success      200    {object}  map[string]interface{}
 // @Failure      400    {object}  response.ErrorResponse
+// @Failure      429    {object}  response.ErrorResponse
 // @Failure      500    {object}  response.ErrorResponse
 // @Router       /diagnosis [post]
 func StartDiagnosis(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
+
+	var todayCount int64
+	today := time.Now().Truncate(24 * time.Hour)
+	config.Db.Model(&models.AiAnalysisResult{}).
+		Joins("JOIN scans ON scans.id = ai_analysis_results.scan_id").
+		Where("scans.user_id = ? AND ai_analysis_results.analysis_type = ? AND ai_analysis_results.created_at >= ?", userID, models.DiagnosisAnalysisType, today).
+		Count(&todayCount)
+	if todayCount >= 5 {
+		response.Error(w, http.StatusTooManyRequests, "daily diagnosis limit reached (5 per day)")
+		return
+	}
 
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
 		response.Error(w, http.StatusBadRequest, "failed to parse form")

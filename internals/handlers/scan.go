@@ -26,10 +26,19 @@ import (
 // @Param        image  formData  file  true  "Plant image"
 // @Success      200    {object}  map[string]interface{}
 // @Failure      400    {object}  response.ErrorResponse
+// @Failure      429    {object}  response.ErrorResponse
 // @Failure      500    {object}  response.ErrorResponse
 // @Router       /scan [post]
 func ScanPlant(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.GetUserID(r)
+
+	var todayCount int64
+	today := time.Now().Truncate(24 * time.Hour)
+	config.Db.Model(&models.Scan{}).Where("user_id = ? AND created_at >= ?", userID, today).Count(&todayCount)
+	if todayCount >= 5 {
+		response.Error(w, http.StatusTooManyRequests, "daily scan limit reached (5 per day)")
+		return
+	}
 
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
 		response.Error(w, http.StatusBadRequest, "failed to parse form")
