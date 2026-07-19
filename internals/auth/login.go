@@ -81,7 +81,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, "failed to generate refresh token")
 		return
 	}
-
+	// on logn
 	dbToken := models.RefreshToken{
 		Token:     refreshToken,
 		UserID:    user.ID,
