@@ -15,6 +15,64 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/google": {
+            "post": {
+                "description": "Authenticate using a Google ID token. Creates a new user if the email doesn't exist.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login or register with Google",
+                "parameters": [
+                    {
+                        "description": "Google ID token",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internals_auth.GoogleLoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internals_auth.GoogleLoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/plantPal_internals_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/plantPal_internals_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/plantPal_internals_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/plantPal_internals_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/diagnosis": {
             "post": {
                 "security": [
@@ -1302,6 +1360,28 @@ const docTemplate = `{
                 }
             }
         },
+        "internals_auth.GoogleLoginRequest": {
+            "type": "object",
+            "properties": {
+                "id_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "internals_auth.GoogleLoginResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/internals_auth.UserResponse"
+                }
+            }
+        },
         "internals_auth.LoginRequest": {
             "type": "object",
             "properties": {
@@ -1340,6 +1420,29 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string"
+                }
+            }
+        },
+        "internals_auth.UserResponse": {
+            "type": "object",
+            "properties": {
+                "care_streak_days": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "total_journial_injuries": {
+                    "type": "integer"
+                },
+                "total_task_done": {
+                    "type": "integer"
                 }
             }
         },

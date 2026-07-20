@@ -8,6 +8,20 @@ definitions:
         description: Valid is true if Time is not NULL
         type: boolean
     type: object
+  internals_auth.GoogleLoginRequest:
+    properties:
+      id_token:
+        type: string
+    type: object
+  internals_auth.GoogleLoginResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+      user:
+        $ref: '#/definitions/internals_auth.UserResponse'
+    type: object
   internals_auth.LoginRequest:
     properties:
       email:
@@ -33,6 +47,21 @@ definitions:
         type: string
       password:
         type: string
+    type: object
+  internals_auth.UserResponse:
+    properties:
+      care_streak_days:
+        type: integer
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: integer
+      total_journial_injuries:
+        type: integer
+      total_task_done:
+        type: integer
     type: object
   internals_handlers.ChatMessageRequest:
     properties:
@@ -454,6 +483,45 @@ info:
   title: PlantPal API
   version: "1.0"
 paths:
+  /auth/google:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate using a Google ID token. Creates a new user if the
+        email doesn't exist.
+      parameters:
+      - description: Google ID token
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internals_auth.GoogleLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internals_auth.GoogleLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/plantPal_internals_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/plantPal_internals_response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/plantPal_internals_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/plantPal_internals_response.ErrorResponse'
+      summary: Login or register with Google
+      tags:
+      - auth
   /diagnosis:
     post:
       consumes:
