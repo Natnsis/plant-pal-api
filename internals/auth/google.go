@@ -19,9 +19,18 @@ type GoogleLoginRequest struct {
 }
 
 type GoogleLoginResponse struct {
-	AccessToken  string      `json:"access_token"`
-	RefreshToken string      `json:"refresh_token"`
-	User         models.User `json:"user"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	User         UserResponse `json:"user"`
+}
+
+type UserResponse struct {
+	ID                   uint   `json:"id"`
+	FullName             string `json:"full_name"`
+	Email                string `json:"email"`
+	CareStreakDays       int    `json:"care_streak_days"`
+	TotalTaskDone        int    `json:"total_task_done"`
+	TotalJournalInjuries int    `json:"total_journial_injuries"`
 }
 
 // LoginWithGoogle godoc
@@ -127,6 +136,13 @@ func LoginWithGoogle(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, GoogleLoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		User:         user,
+		User: UserResponse{
+			ID:                   user.ID,
+			FullName:             user.FullName,
+			Email:                user.Email,
+			CareStreakDays:       user.CareStreakDays,
+			TotalTaskDone:        user.TotalTaskDone,
+			TotalJournalInjuries: user.TotalJournalInjuries,
+		},
 	})
 }
