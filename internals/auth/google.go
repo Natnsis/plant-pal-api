@@ -24,6 +24,19 @@ type GoogleLoginResponse struct {
 	User         models.User `json:"user"`
 }
 
+// LoginWithGoogle godoc
+// @Summary      Login or register with Google
+// @Description  Authenticate using a Google ID token. Creates a new user if the email doesn't exist.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      GoogleLoginRequest  true  "Google ID token"
+// @Success      200   {object}  GoogleLoginResponse
+// @Failure      400   {object}  response.ErrorResponse
+// @Failure      401   {object}  response.ErrorResponse
+// @Failure      409   {object}  response.ErrorResponse
+// @Failure      500   {object}  response.ErrorResponse
+// @Router       /auth/google [post]
 func LoginWithGoogle(w http.ResponseWriter, r *http.Request) {
 	var req GoogleLoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
