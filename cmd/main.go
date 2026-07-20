@@ -31,6 +31,7 @@ func main() {
 	config.GetJwtSecret()
 	config.GetCloudinaryConfig()
 	config.GetGeminiAPIKey()
+	config.GetGoogleConfig()
 
 	// to auto migrate dbs
 	models.MigrateDb()
