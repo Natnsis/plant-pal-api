@@ -50,6 +50,10 @@ func main() {
 	r.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "docs/swagger.json")
 	})
+	r.HandleFunc("/openapi.json", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		http.ServeFile(w, r, "docs/openapi.json")
+	})
 	r.PathPrefix("/docs/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("/swagger.json"),
 	))

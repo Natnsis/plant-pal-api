@@ -1,0 +1,2324 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "API for PlantPal - a plant care and health monitoring application.",
+        "title": "PlantPal API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "paths": {
+        "/auth/google": {
+            "post": {
+                "description": "Authenticate using a Google ID token. Creates a new user if the email doesn't exist.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login or register with Google",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_auth.GoogleLoginRequest"
+                            }
+                        }
+                    },
+                    "description": "Google ID token",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/internals_auth.GoogleLoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnosis": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload a plant image for AI-powered disease diagnosis and open a chat session",
+                "tags": [
+                    "diagnosis"
+                ],
+                "summary": "Start a plant diagnosis",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/postDiagnosis"
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnosis/{session_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the chat history for a diagnosis session",
+                "tags": [
+                    "diagnosis"
+                ],
+                "summary": "Get diagnosis chat history",
+                "parameters": [
+                    {
+                        "description": "Session ID",
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnosis/{session_id}/chat": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Send a follow-up message in a diagnosis chat session",
+                "tags": [
+                    "diagnosis"
+                ],
+                "summary": "Send a chat message",
+                "parameters": [
+                    {
+                        "description": "Session ID",
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_handlers.ChatMessageRequest"
+                            }
+                        }
+                    },
+                    "description": "Chat message",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "description": "Authenticate with email and password to receive access and refresh tokens",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login a user",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_auth.LoginRequest"
+                            }
+                        }
+                    },
+                    "description": "Login credentials",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "description": "Revoke a refresh token to invalidate a session",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout a user",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_auth.LogoutRequest"
+                            }
+                        }
+                    },
+                    "description": "Logout payload",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the notification preferences for the authenticated user",
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Get notification settings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_models.Notification"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update notification preferences for the authenticated user",
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Update notification settings",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_handlers.UpdateNotificationRequest"
+                            }
+                        }
+                    },
+                    "description": "Settings to update",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_models.Notification"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/plants": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a list of all plants belonging to the authenticated user",
+                "tags": [
+                    "plants"
+                ],
+                "summary": "List all plants",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/plantPal_internals_models.Plant"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add a new plant to the user's collection",
+                "tags": [
+                    "plants"
+                ],
+                "summary": "Create a new plant",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_handlers.CreatePlantRequest"
+                            }
+                        }
+                    },
+                    "description": "Plant details",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_models.Plant"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/plants/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get detailed information about a specific plant",
+                "tags": [
+                    "plants"
+                ],
+                "summary": "Get a plant",
+                "parameters": [
+                    {
+                        "description": "Plant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_models.Plant"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update details of an existing plant",
+                "tags": [
+                    "plants"
+                ],
+                "summary": "Update a plant",
+                "parameters": [
+                    {
+                        "description": "Plant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_handlers.UpdatePlantRequest"
+                            }
+                        }
+                    },
+                    "description": "Fields to update",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_models.Plant"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Remove a plant from the user's collection",
+                "tags": [
+                    "plants"
+                ],
+                "summary": "Delete a plant",
+                "parameters": [
+                    {
+                        "description": "Plant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/plants/{id}/activities": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all activity logs for a specific plant",
+                "tags": [
+                    "activities"
+                ],
+                "summary": "Get activity log",
+                "parameters": [
+                    {
+                        "description": "Plant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/plantPal_internals_models.ActivityLog"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Record a new activity for a plant (watered, fertilized, repotted, etc.)",
+                "tags": [
+                    "activities"
+                ],
+                "summary": "Log an activity",
+                "parameters": [
+                    {
+                        "description": "Plant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_handlers.CreateActivityRequest"
+                            }
+                        }
+                    },
+                    "description": "Activity details",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_models.ActivityLog"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/plants/{id}/care-plan": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the care plan for a specific plant",
+                "tags": [
+                    "care-plan"
+                ],
+                "summary": "Get care plan",
+                "parameters": [
+                    {
+                        "description": "Plant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_models.CarePlan"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the care plan for a specific plant",
+                "tags": [
+                    "care-plan"
+                ],
+                "summary": "Update care plan",
+                "parameters": [
+                    {
+                        "description": "Plant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_handlers.UpdateCarePlanRequest"
+                            }
+                        }
+                    },
+                    "description": "Fields to update",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_models.CarePlan"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/plants/{id}/growth": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all growth metrics for a specific plant",
+                "tags": [
+                    "growth"
+                ],
+                "summary": "Get growth metrics",
+                "parameters": [
+                    {
+                        "description": "Plant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/plantPal_internals_models.GrowthMetric"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Record a new growth measurement for a plant",
+                "tags": [
+                    "growth"
+                ],
+                "summary": "Create a growth metric",
+                "parameters": [
+                    {
+                        "description": "Plant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_handlers.CreateGrowthRequest"
+                            }
+                        }
+                    },
+                    "description": "Growth measurement",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_models.GrowthMetric"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/plants/{id}/reminders": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all reminders for a specific plant",
+                "tags": [
+                    "reminders"
+                ],
+                "summary": "Get plant reminders",
+                "parameters": [
+                    {
+                        "description": "Plant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/plantPal_internals_models.Reminder"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/refresh": {
+            "post": {
+                "description": "Exchange a refresh token for a new access and refresh token pair (single-use rotation)",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh tokens",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_auth.RefreshRequest"
+                            }
+                        }
+                    },
+                    "description": "Refresh token payload",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "description": "Create a new user account with full name, email, password, and phone number",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register a new user",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_auth.RegisterRequest"
+                            }
+                        }
+                    },
+                    "description": "User registration payload",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/reminders/today": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all incomplete reminders scheduled for today across all plants",
+                "tags": [
+                    "reminders"
+                ],
+                "summary": "Get today's reminders",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/plantPal_internals_models.Reminder"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/reminders/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mark a reminder as completed or snooze it",
+                "tags": [
+                    "reminders"
+                ],
+                "summary": "Update a reminder",
+                "parameters": [
+                    {
+                        "description": "Reminder ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_handlers.UpdateReminderRequest"
+                            }
+                        }
+                    },
+                    "description": "Update payload",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_models.Reminder"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/scan": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload a plant image for AI-powered identification. Returns a preview for the user to confirm before saving.",
+                "tags": [
+                    "scan"
+                ],
+                "summary": "Identify a plant",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/postDiagnosis"
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/scan/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve details of a specific scan including analysis results",
+                "tags": [
+                    "scan"
+                ],
+                "summary": "Get scan details",
+                "parameters": [
+                    {
+                        "description": "Scan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/scan/{id}/confirm": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Confirm that the identified plant is correct, creating species, plant, care plan, and reminders",
+                "tags": [
+                    "scan"
+                ],
+                "summary": "Confirm a scan and create plant",
+                "parameters": [
+                    {
+                        "description": "Scan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/internals_handlers.ConfirmScanRequest"
+                            }
+                        }
+                    },
+                    "description": "Confirmation payload",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/plantPal_internals_response.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "servers": [
+        {
+            "url": "https://plant-pal-api-ohhx.onrender.com",
+            "description": "Production"
+        },
+        {
+            "url": "http://localhost:{port}",
+            "description": "Local development",
+            "variables": {
+                "port": {
+                    "default": "8080"
+                }
+            }
+        }
+    ],
+    "components": {
+        "requestBodies": {
+            "postDiagnosis": {
+                "content": {
+                    "multipart/form-data": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "image": {
+                                    "description": "Plant image",
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            },
+                            "required": [
+                                "image"
+                            ]
+                        }
+                    }
+                },
+                "required": true
+            }
+        },
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header"
+            }
+        },
+        "schemas": {
+            "gorm.DeletedAt": {
+                "type": "object",
+                "properties": {
+                    "time": {
+                        "type": "string"
+                    },
+                    "valid": {
+                        "description": "Valid is true if Time is not NULL",
+                        "type": "boolean"
+                    }
+                }
+            },
+            "internals_auth.GoogleLoginRequest": {
+                "type": "object",
+                "properties": {
+                    "id_token": {
+                        "type": "string"
+                    }
+                }
+            },
+            "internals_auth.GoogleLoginResponse": {
+                "type": "object",
+                "properties": {
+                    "access_token": {
+                        "type": "string"
+                    },
+                    "refresh_token": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/internals_auth.UserResponse"
+                    }
+                }
+            },
+            "internals_auth.LoginRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            },
+            "internals_auth.LogoutRequest": {
+                "type": "object",
+                "properties": {
+                    "refresh_token": {
+                        "type": "string"
+                    }
+                }
+            },
+            "internals_auth.RefreshRequest": {
+                "type": "object",
+                "properties": {
+                    "refresh_token": {
+                        "type": "string"
+                    }
+                }
+            },
+            "internals_auth.RegisterRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "full_name": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            },
+            "internals_auth.UserResponse": {
+                "type": "object",
+                "properties": {
+                    "care_streak_days": {
+                        "type": "integer"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "full_name": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "total_journial_injuries": {
+                        "type": "integer"
+                    },
+                    "total_task_done": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "internals_handlers.ChatMessageRequest": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            },
+            "internals_handlers.ConfirmScanRequest": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string"
+                    },
+                    "nickname": {
+                        "type": "string"
+                    }
+                }
+            },
+            "internals_handlers.CreateActivityRequest": {
+                "type": "object",
+                "properties": {
+                    "activity_type": {
+                        "type": "string"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "photo_url": {
+                        "type": "string"
+                    }
+                }
+            },
+            "internals_handlers.CreateGrowthRequest": {
+                "type": "object",
+                "properties": {
+                    "growth_rate_status": {
+                        "type": "string"
+                    },
+                    "height_cm": {
+                        "type": "number"
+                    }
+                }
+            },
+            "internals_handlers.CreatePlantRequest": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string"
+                    },
+                    "nickname": {
+                        "type": "string"
+                    },
+                    "species_id": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "internals_handlers.UpdateCarePlanRequest": {
+                "type": "object",
+                "properties": {
+                    "humidity_requirement": {
+                        "type": "string"
+                    },
+                    "light_requirement": {
+                        "type": "string"
+                    },
+                    "watering_amount": {
+                        "type": "string"
+                    },
+                    "watering_frequency_days": {
+                        "type": "integer"
+                    },
+                    "watering_method": {
+                        "type": "string"
+                    },
+                    "watering_tips": {
+                        "type": "string"
+                    }
+                }
+            },
+            "internals_handlers.UpdateNotificationRequest": {
+                "type": "object",
+                "properties": {
+                    "daily_summary_enabled": {
+                        "type": "boolean"
+                    },
+                    "default_snooze_duration_minute": {
+                        "type": "integer"
+                    },
+                    "notification_enabled": {
+                        "type": "boolean"
+                    },
+                    "preferred_notification_time": {
+                        "type": "string"
+                    },
+                    "sound_alert_enabled": {
+                        "type": "boolean"
+                    },
+                    "vibration_enabled": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "internals_handlers.UpdatePlantRequest": {
+                "type": "object",
+                "properties": {
+                    "health_score": {
+                        "type": "integer"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "nickname": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    }
+                }
+            },
+            "internals_handlers.UpdateReminderRequest": {
+                "type": "object",
+                "properties": {
+                    "is_completed": {
+                        "type": "boolean"
+                    },
+                    "snooze": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "plantPal_internals_models.ActivityLog": {
+                "type": "object",
+                "properties": {
+                    "activity_type": {
+                        "$ref": "#/components/schemas/plantPal_internals_models.ActivityType"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "deletedAt": {
+                        "$ref": "#/components/schemas/gorm.DeletedAt"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "logged_date": {
+                        "type": "string"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "photo_url": {
+                        "type": "string"
+                    },
+                    "plant": {
+                        "$ref": "#/components/schemas/plantPal_internals_models.Plant"
+                    },
+                    "plant_id": {
+                        "type": "integer"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    }
+                }
+            },
+            "plantPal_internals_models.ActivityType": {
+                "type": "string",
+                "enum": [
+                    "watered",
+                    "fertilized",
+                    "repotted",
+                    "photo_node",
+                    "milestone"
+                ],
+                "x-enum-varnames": [
+                    "ActivityWatered",
+                    "ActivityFertilized",
+                    "ActivityRepotted",
+                    "ActivityPhotoNode",
+                    "ActivityMilestone"
+                ]
+            },
+            "plantPal_internals_models.CarePlan": {
+                "type": "object",
+                "properties": {
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "deletedAt": {
+                        "$ref": "#/components/schemas/gorm.DeletedAt"
+                    },
+                    "humidity_requirement": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "light_requirement": {
+                        "type": "string"
+                    },
+                    "plant": {
+                        "$ref": "#/components/schemas/plantPal_internals_models.Plant"
+                    },
+                    "plant_id": {
+                        "type": "integer"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    },
+                    "watering_amount": {
+                        "type": "string"
+                    },
+                    "watering_frequency_days": {
+                        "type": "integer"
+                    },
+                    "watering_method": {
+                        "type": "string"
+                    },
+                    "watering_tips": {
+                        "type": "string"
+                    }
+                }
+            },
+            "plantPal_internals_models.DifficultyType": {
+                "type": "string",
+                "enum": [
+                    "easy",
+                    "medium",
+                    "hard"
+                ],
+                "x-enum-varnames": [
+                    "EasyDifficulty",
+                    "MediumDifficulty",
+                    "HardDifficulty"
+                ]
+            },
+            "plantPal_internals_models.GrowthMetric": {
+                "type": "object",
+                "properties": {
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "deletedAt": {
+                        "$ref": "#/components/schemas/gorm.DeletedAt"
+                    },
+                    "growth_rate_status": {
+                        "$ref": "#/components/schemas/plantPal_internals_models.GrowthRateStatus"
+                    },
+                    "height_cm": {
+                        "type": "number"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "plant": {
+                        "$ref": "#/components/schemas/plantPal_internals_models.Plant"
+                    },
+                    "plant_id": {
+                        "type": "integer"
+                    },
+                    "recorded_date": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    }
+                }
+            },
+            "plantPal_internals_models.GrowthRateStatus": {
+                "type": "string",
+                "enum": [
+                    "slow",
+                    "moderate",
+                    "fast"
+                ],
+                "x-enum-varnames": [
+                    "SlowGrowthRate",
+                    "ModerateGrowthRate",
+                    "FastGrowthRate"
+                ]
+            },
+            "plantPal_internals_models.Notification": {
+                "type": "object",
+                "properties": {
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "daily_summary_enabled": {
+                        "type": "boolean"
+                    },
+                    "default_snooze_duration_minute": {
+                        "type": "integer"
+                    },
+                    "deletedAt": {
+                        "$ref": "#/components/schemas/gorm.DeletedAt"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "notification_enabled": {
+                        "type": "boolean"
+                    },
+                    "preferred_notification_time": {
+                        "type": "string"
+                    },
+                    "sound_alert_enabled": {
+                        "type": "boolean"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/plantPal_internals_models.User"
+                    },
+                    "user_id": {
+                        "type": "integer"
+                    },
+                    "vibration_enabled": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "plantPal_internals_models.Plant": {
+                "type": "object",
+                "properties": {
+                    "activity_logs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/plantPal_internals_models.ActivityLog"
+                        }
+                    },
+                    "care_plans": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/plantPal_internals_models.CarePlan"
+                        }
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "deletedAt": {
+                        "$ref": "#/components/schemas/gorm.DeletedAt"
+                    },
+                    "growth_metrics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/plantPal_internals_models.GrowthMetric"
+                        }
+                    },
+                    "health_score": {
+                        "type": "integer"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "nickname": {
+                        "type": "string"
+                    },
+                    "reminders": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/plantPal_internals_models.Reminder"
+                        }
+                    },
+                    "scans": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/plantPal_internals_models.Scan"
+                        }
+                    },
+                    "species": {
+                        "$ref": "#/components/schemas/plantPal_internals_models.Species"
+                    },
+                    "species_id": {
+                        "type": "integer"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/plantPal_internals_models.PlantStatus"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/plantPal_internals_models.User"
+                    },
+                    "user_id": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "plantPal_internals_models.PlantStatus": {
+                "type": "string",
+                "enum": [
+                    "good",
+                    "needs_attention"
+                ],
+                "x-enum-varnames": [
+                    "GoodPlantStatus",
+                    "NeedsAttentionStatus"
+                ]
+            },
+            "plantPal_internals_models.Reminder": {
+                "type": "object",
+                "properties": {
+                    "completed_at": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "deletedAt": {
+                        "$ref": "#/components/schemas/gorm.DeletedAt"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "is_completed": {
+                        "type": "boolean"
+                    },
+                    "plant": {
+                        "$ref": "#/components/schemas/plantPal_internals_models.Plant"
+                    },
+                    "plant_id": {
+                        "type": "integer"
+                    },
+                    "scheduled_time": {
+                        "type": "string"
+                    },
+                    "snooze_count": {
+                        "type": "integer"
+                    },
+                    "task_type": {
+                        "$ref": "#/components/schemas/plantPal_internals_models.TaskType"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    }
+                }
+            },
+            "plantPal_internals_models.Scan": {
+                "type": "object",
+                "properties": {
+                    "ai_output_id": {
+                        "type": "integer"
+                    },
+                    "analysis_id": {
+                        "type": "integer"
+                    },
+                    "captured_image_url": {
+                        "type": "string"
+                    },
+                    "confidence_score": {
+                        "type": "number"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "deletedAt": {
+                        "$ref": "#/components/schemas/gorm.DeletedAt"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "json_identification_payload": {
+                        "type": "string"
+                    },
+                    "plant_id": {
+                        "type": "integer"
+                    },
+                    "retake": {
+                        "type": "boolean"
+                    },
+                    "selectedSymptoms": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/plantPal_internals_models.Symptoms"
+                        }
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    },
+                    "user_id": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "plantPal_internals_models.Species": {
+                "type": "object",
+                "properties": {
+                    "common_name": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "deletedAt": {
+                        "$ref": "#/components/schemas/gorm.DeletedAt"
+                    },
+                    "difficulty_level": {
+                        "$ref": "#/components/schemas/plantPal_internals_models.DifficultyType"
+                    },
+                    "family": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "origin": {
+                        "type": "string"
+                    },
+                    "plants": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/plantPal_internals_models.Plant"
+                        }
+                    },
+                    "scientific_name": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    }
+                }
+            },
+            "plantPal_internals_models.Symptoms": {
+                "type": "string",
+                "enum": [
+                    "yellow_leaves",
+                    "brown_spots",
+                    "brown_steams",
+                    "weathering_leaves"
+                ],
+                "x-enum-varnames": [
+                    "LeaveYellowSymptoms",
+                    "BrownSpotSymptoms",
+                    "LeaveBrownSymptoms",
+                    "WeatheringSymptoms"
+                ]
+            },
+            "plantPal_internals_models.TaskType": {
+                "type": "string",
+                "enum": [
+                    "water",
+                    "fertilize",
+                    "mist",
+                    "rotate",
+                    "repot"
+                ],
+                "x-enum-varnames": [
+                    "WaterTask",
+                    "FertilizeTask",
+                    "MistTask",
+                    "RotateTask",
+                    "RepotTask"
+                ]
+            },
+            "plantPal_internals_models.User": {
+                "type": "object",
+                "properties": {
+                    "care_streak_days": {
+                        "type": "integer"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "deletedAt": {
+                        "$ref": "#/components/schemas/gorm.DeletedAt"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "full_name": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "notifications": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/plantPal_internals_models.Notification"
+                        }
+                    },
+                    "plants": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/plantPal_internals_models.Plant"
+                        }
+                    },
+                    "total_journial_injuries": {
+                        "type": "integer"
+                    },
+                    "total_task_done": {
+                        "type": "integer"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    }
+                }
+            },
+            "plantPal_internals_response.ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
